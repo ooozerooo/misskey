@@ -70,20 +70,20 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .mk-emoji {
-	height: 1.25em;
-	vertical-align: -0.25em;
+	height: 1.5em;
+	vertical-align: middle;
 
 	&.custom {
-		height: 2.5em;
+		height: 1.5em;
 		vertical-align: middle;
 		transition: transform 0.2s ease;
 
 		&:hover {
-			transform: scale(1.2);
+			transform: scale(2.2);
 		}
 
 		&.normal {
-			height: 1.25em;
+			height: 1.5em;
 			vertical-align: -0.25em;
 
 			&:hover {

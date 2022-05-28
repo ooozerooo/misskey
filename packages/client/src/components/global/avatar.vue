@@ -98,6 +98,7 @@ watch(() => props.user.avatarBlurhash, () => {
 		left: 0;
 		width: 20%;
 		height: 20%;
+                display: none;
 	}
 
 	&.square {

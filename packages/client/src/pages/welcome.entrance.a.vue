@@ -212,6 +212,7 @@ export default defineComponent({
 			position: absolute;
 			bottom: 32px;
 			left: 35px;
+                        display: none;
 
 			> * {
 				margin-right: 8px;

@@ -11,10 +11,10 @@
 		</MkA>
 		<span v-if="note.visibility !== 'public'" class="visibility">
 			<i v-if="note.visibility === 'home'" class="fas fa-home"></i>
-			<i v-else-if="note.visibility === 'followers'" class="fas fa-unlock"></i>
+			<i v-else-if="note.visibility === 'followers'" class="fas fa-lock"></i>
 			<i v-else-if="note.visibility === 'specified'" class="fas fa-envelope"></i>
 		</span>
-		<span v-if="note.localOnly" class="localOnly"><i class="fas fa-biohazard"></i></span>
+		<span v-if="note.localOnly" class="localOnly"><i class="fas fa-chain-broken"></i></span>
 	</div>
 </header>
 </template>

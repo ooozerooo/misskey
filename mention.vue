@@ -62,10 +62,9 @@ export default defineComponent({
 <style lang="scss" module>
 .root {
 	display: inline-block;
-	padding: none !important;
+	padding: 4px 8px 4px 4px;
 	border-radius: 999px;
 	color: var(--mention);
-        background: none !important;
 
 	&.isMe {
 		color: var(--mentionMe);
@@ -79,10 +78,9 @@ export default defineComponent({
 	margin: 0 0.2em 0 0;
 	vertical-align: bottom;
 	border-radius: 100%;
-        display: none;
 }
 
 .mainHost {
-	display: none;
+	opacity: 0.5;
 }
 </style>

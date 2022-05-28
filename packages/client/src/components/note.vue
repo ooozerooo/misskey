@@ -30,10 +30,10 @@
 			</button>
 			<span v-if="note.visibility !== 'public'" class="visibility">
 				<i v-if="note.visibility === 'home'" class="fas fa-home"></i>
-				<i v-else-if="note.visibility === 'followers'" class="fas fa-unlock"></i>
+				<i v-else-if="note.visibility === 'followers'" class="fas fa-lock"></i>
 				<i v-else-if="note.visibility === 'specified'" class="fas fa-envelope"></i>
 			</span>
-			<span v-if="note.localOnly" class="localOnly"><i class="fas fa-biohazard"></i></span>
+			<span v-if="note.localOnly" class="localOnly"><i class="fas fa-chain-broken"></i></span>
 		</div>
 	</div>
 	<article class="article" @contextmenu.stop="onContextmenu">
@@ -294,7 +294,7 @@ function readPromo() {
 .tkcbzcuz {
 	position: relative;
 	transition: box-shadow 0.1s ease;
-	font-size: 1.05em;
+	font-size: 1em;
 	overflow: clip;
 	contain: content;
 
@@ -358,6 +358,7 @@ function readPromo() {
 	> .reply-to {
 		opacity: 0.7;
 		padding-bottom: 0;
+                display: none;
 	}
 
 	> .renote {
@@ -430,7 +431,7 @@ function readPromo() {
 			width: 58px;
 			height: 58px;
 			position: sticky;
-			top: calc(22px + var(--stickyTop, 0px));
+			top: 0;
 			left: 0;
 		}
 
@@ -582,7 +583,7 @@ function readPromo() {
 				margin: 0 10px 8px 0;
 				width: 50px;
 				height: 50px;
-				top: calc(14px + var(--stickyTop, 0px));
+				top: 0;
 			}
 		}
 	}

@@ -88,11 +88,11 @@ export default defineComponent({
 	}
 
 	> .schema {
-		opacity: 0.5;
+		opacity: 1.0;
 	}
 
 	> .hostname {
-		font-weight: bold;
+		font-weight: normal;
 	}
 
 	> .pathname {

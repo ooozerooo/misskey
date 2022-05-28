@@ -49,6 +49,7 @@ const toggle = () => {
 
 	> span {
 		margin-left: 4px;
+                display: none;
 
 		&:before {
 			content: '(';
