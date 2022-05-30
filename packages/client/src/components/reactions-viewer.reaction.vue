@@ -135,14 +135,14 @@ export default defineComponent({
 	}
 
 	&.reacted {
-		background: var(--accent);
+		background: var(--bg);
 
 		&:hover {
 			background: var(--accent);
 		}
 
 		> span {
-			color: var(--fgOnAccent);
+			color: var(--fgTransparentWeak);
 		}
 	}
 
@@ -150,6 +150,7 @@ export default defineComponent({
 		font-size: 0.9em;
 		line-height: 32px;
 		margin: 0 0 0 4px;
+                color: var(--fgTransparentWeak);
 	}
 }
 </style>

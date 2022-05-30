@@ -129,3 +129,4 @@ export function convertLegacyReaction(reaction: string): string {
 	if (Object.keys(legacies).includes(reaction)) return legacies[reaction];
 	return reaction;
 }
+

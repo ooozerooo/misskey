@@ -21,7 +21,7 @@ const host = toUnicode(hostRaw);
 <style lang="scss" scoped>
 .mk-acct {
 	> .host {
-		opacity: 0.5;
+		opacity: 0.8;
 	}
 }
 </style>

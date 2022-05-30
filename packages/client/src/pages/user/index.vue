@@ -329,7 +329,7 @@ export default defineComponent({
 						background-color: #4c5e6d;
 						background-size: cover;
 						background-position: center;
-						box-shadow: 0 0 128px rgba(0, 0, 0, 0.5) inset;
+						box-shadow: none;
 						will-change: background-position;
 					}
 
@@ -339,7 +339,7 @@ export default defineComponent({
 						left: 0;
 						width: 100%;
 						height: 78px;
-						background: linear-gradient(transparent, rgba(#000, 0.7));
+						background: linear-gradient(transparent, rgba(#000, 0.3));
 					}
 
 					> .followed {
@@ -393,7 +393,7 @@ export default defineComponent({
 							line-height: 32px;
 							font-weight: bold;
 							font-size: 1.8em;
-							text-shadow: 0 0 8px #000;
+							text-shadow: 2px 2px #0006;
 						}
 
 						> .bottom {
@@ -401,7 +401,7 @@ export default defineComponent({
 								display: inline-block;
 								margin-right: 16px;
 								line-height: 20px;
-								opacity: 0.8;
+								opacity: 1.0;
 
 								&.username {
 									font-weight: bold;
