@@ -200,6 +200,10 @@ export default defineComponent({
 	opacity: 0;
 }
 
+.fJENQ5GN8yjYYcGCAmSK {
+  background: var(--bg);
+}
+
 .xcukqgmh {
 	> .main {
 
@@ -224,6 +228,7 @@ export default defineComponent({
 		> .content {
 			margin-top: 16px;
 			padding: 16px 0 0 0;
+                        background: var(--bg);
 		}
 
 		> .actions {

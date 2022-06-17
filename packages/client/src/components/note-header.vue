@@ -9,8 +9,9 @@
 		<MkA class="created-at" :to="notePage(note)">
 			<MkTime :time="note.createdAt"/>
 		</MkA>
-		<span v-if="note.visibility !== 'public'" class="visibility">
-			<i v-if="note.visibility === 'home'" class="fas fa-home"></i>
+		<span class="visibility">
+                        <i v-if="note.visibility === 'public'" class="fas fa-globe"></i>
+			<i v-else-if="note.visibility === 'home'" class="fas fa-home"></i>
 			<i v-else-if="note.visibility === 'followers'" class="fas fa-lock"></i>
 			<i v-else-if="note.visibility === 'specified'" class="fas fa-envelope"></i>
 		</span>

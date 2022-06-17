@@ -47,6 +47,7 @@ onUnmounted(() => {
 	opacity: 0.8;
 	border-radius: 4px;
 	max-width: 320px;
+        display: none;
 
 	> .command {
 		display: flex;

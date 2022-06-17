@@ -26,8 +26,9 @@
 				<i v-if="isMyRenote" class="fas fa-ellipsis-h dropdownIcon"></i>
 				<MkTime :time="note.createdAt"/>
 			</button>
-			<span v-if="note.visibility !== 'public'" class="visibility">
-				<i v-if="note.visibility === 'home'" class="fas fa-home"></i>
+			<span class="visibility">
+                                <i v-if="note.visibility === 'public'" class="fas fa-globe"></i>
+				<i v-else-if="note.visibility === 'home'" class="fas fa-home"></i>
 				<i v-else-if="note.visibility === 'followers'" class="fas fa-lock"></i>
 				<i v-else-if="note.visibility === 'specified'" class="fas fa-envelope"></i>
 			</span>
@@ -42,8 +43,12 @@
 					<MkA v-user-preview="appearNote.user.id" class="name" :to="userPage(appearNote.user)">
 						<MkUserName :user="appearNote.user"/>
 					</MkA>
+                                       <MkA class="created-at" :to="notePage(note)">
+		                                <MkTime :time="note.createdAt"/>
+                                        </MkA>
 					<span v-if="appearNote.user.isBot" class="is-bot">bot</span>
-					<span v-if="appearNote.visibility !== 'public'" class="visibility">
+					<span class="visibility">
+                                                <i v-if="appearNote.visibility === 'public'" class="fas fa-globe"></i>
 						<i v-if="appearNote.visibility === 'home'" class="fas fa-home"></i>
 						<i v-else-if="appearNote.visibility === 'followers'" class="fas fa-lock"></i>
 						<i v-else-if="appearNote.visibility === 'specified'" class="fas fa-envelope"></i>
@@ -428,9 +433,25 @@ if (appearNote.replyId) {
 				font-size: 0.95em;
 
 				> .top {
+                                       align-items: baseline;
+                                       display: flex;
+                                       white-space: nowrap;
+
 					> .name {
 						font-weight: bold;
+                                        }
+
+                                        > .created-at {
+                                                      margin-left: auto;
+                                        }
+  
+                                        > .visibility {
+                                                      margin-left: 8px;                       
 					}
+                       
+                                        > .localOnly {
+                                                     margin-left: 8px;
+                                        }
 
 					> .is-bot {
 						flex-shrink: 0;

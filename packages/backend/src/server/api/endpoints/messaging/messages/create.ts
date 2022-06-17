@@ -67,7 +67,7 @@ export const meta = {
 export const paramDef = {
 	type: 'object',
 	properties: {
-		text: { type: 'string', nullable: true, maxLength: 3000 },
+		text: { type: 'string', nullable: true, maxLength: 3090 },
 		fileId: { type: 'string', format: 'misskey:id' },
 	},
 	anyOf: [

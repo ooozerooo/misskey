@@ -84,7 +84,7 @@ export default defineComponent({
 
 		&.normal {
 			height: 1.5em;
-			vertical-align: -0.25em;
+			vertical-align: middle;
 
 			&:hover {
 				transform: none;

@@ -885,7 +885,7 @@ onMounted(() => {
 		> .text {
 			max-width: 100%;
 			min-width: 100%;
-			min-height: 90px;
+			min-height: 130px;
 
 			&.withCw {
 				padding-top: 8px;
@@ -947,7 +947,7 @@ onMounted(() => {
 			}
 
 			> .text {
-				min-height: 80px;
+				min-height: 120px;
 			}
 
 			> footer {

@@ -116,7 +116,6 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .hkzvhatu {
-	display: inline-block;
 	height: 32px;
 	margin: 2px;
 	padding: 0 6px;
@@ -138,7 +137,7 @@ export default defineComponent({
 		background: var(--bg);
 
 		&:hover {
-			background: var(--accent);
+			background: var(--focus);
 		}
 
 		> span {

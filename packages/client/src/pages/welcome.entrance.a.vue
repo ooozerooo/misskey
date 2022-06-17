@@ -161,6 +161,7 @@ export default defineComponent({
 		}
 
 		> .tl {
+                        display: none;
 			position: absolute;
 			top: 0;
 			bottom: 0;

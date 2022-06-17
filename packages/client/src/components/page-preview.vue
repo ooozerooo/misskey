@@ -74,15 +74,15 @@ export default defineComponent({
 
 			> h1 {
 				margin: 0;
-				font-size: 1em;
+				font-size: 15px;
 				color: var(--urlPreviewTitle);
+                                padding-left: 7px;
 			}
 		}
 
 		> p {
 			margin: 0;
 			color: var(--urlPreviewText);
-			font-size: 0.8em;
 		}
 
 		> footer {
@@ -93,15 +93,16 @@ export default defineComponent({
 				display: inline-block;
 				width: 16px;
 				height: 16px;
-				margin-right: 4px;
+				margin-right: 7px;
 				vertical-align: top;
+                                padding-left: 7px;
 			}
 
 			> p {
 				display: inline-block;
 				margin: 0;
 				color: var(--urlPreviewInfo);
-				font-size: 0.8em;
+				font-size: 12px;
 				line-height: 16px;
 				vertical-align: top;
 			}
