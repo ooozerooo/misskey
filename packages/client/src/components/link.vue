@@ -40,6 +40,7 @@ useTooltip($$(el), (showing) => {
 
 	> .icon {
 		padding-left: 2px;
+                padding-right: 2px;
 		font-size: .9em;
 	}
 }

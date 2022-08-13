@@ -795,11 +795,12 @@ onMounted(() => {
 		}
 
 		> .with-quote {
-			margin: 0 0 8px 0;
+			margin: 0 0 8px 15px;
 			color: var(--accent);
 
 			> button {
-				padding: 4px 8px;
+				padding: 0px 4px;
+                                margin-left: 4px;
 				color: var(--accentAlpha04);
 
 				&:hover {

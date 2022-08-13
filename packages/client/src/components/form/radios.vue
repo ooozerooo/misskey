@@ -68,6 +68,7 @@ export default defineComponent({
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 		grid-gap: 12px;
+                margin-top: 10px;
 	}
 
 	> .caption {

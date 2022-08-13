@@ -84,7 +84,10 @@ export default defineComponent({
 
 		&.normal {
 			height: 1.5em;
+                        width: 1.5em;
 			vertical-align: middle;
+                        display: inline-block;
+                        object-fit: contain;
 
 			&:hover {
 				transform: none;

@@ -133,6 +133,7 @@ export default defineComponent({
 
 	> .editor {
 		position: relative;
+                height: 55px;
 	}
 }
 
@@ -145,4 +146,6 @@ export default defineComponent({
 		}
 	}
 }
+
+
 </style>

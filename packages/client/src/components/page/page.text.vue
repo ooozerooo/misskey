@@ -62,7 +62,7 @@ export default defineComponent({
 	}
 
 	> .url {
-		margin: 0.5em 0;
+		margin: 0.5em 0.1em;
 	}
 }
 </style>

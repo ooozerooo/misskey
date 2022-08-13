@@ -59,7 +59,7 @@ if (props.detail) {
 <style lang="scss" scoped>
 .wrpstxzv {
 	padding: 16px 32px;
-	font-size: 0.9em;
+	font-size: 1em;
 
 	&.max-width_450px {
 		padding: 14px 16px;
