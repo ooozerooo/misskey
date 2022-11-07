@@ -1,6 +1,6 @@
 {
 	"name": "misskey",
-	"version": "12.110.1-81",
+	"version": "12.110.1-130",
 	"codename": "indigo",
 	"repository": {
 		"type": "git",
@@ -32,6 +32,7 @@
 	"dependencies": {
 		"@types/gulp": "4.0.9",
 		"@types/gulp-rename": "2.0.1",
+		"browserslist": "4.21.3",
 		"execa": "5.1.1",
 		"gulp": "4.0.2",
 		"gulp-cssnano": "2.1.3",

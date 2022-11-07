@@ -162,4 +162,5 @@ const props = withDefaults(defineProps<{
 		padding: 4px 6px;
 	}
 }
+
 </style>

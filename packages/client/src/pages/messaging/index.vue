@@ -183,7 +183,7 @@ export default defineComponent({
 
 			&:hover {
 				.avatar {
-					filter: saturate(200%);
+					filter: none;
 				}
 			}
 

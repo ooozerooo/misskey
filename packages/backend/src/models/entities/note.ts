@@ -28,8 +28,9 @@ export class Note {
 	public replyId: Note['id'] | null;
 
 	@ManyToOne(type => Note, {
-		onDelete: 'CASCADE',
-	})
+                onDelete: 'CASCADE',
+        })
+
 	@JoinColumn()
 	public reply: Note | null;
 

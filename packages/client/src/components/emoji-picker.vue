@@ -544,6 +544,12 @@ defineExpose({
 						vertical-align: -.25em;
 						pointer-events: none;
 					}
+                        
+                                        >img{
+                                                object-fit: contain;
+						display: inline-block;
+						width: var(--eachSize);
+					}
 				}
 			}
 

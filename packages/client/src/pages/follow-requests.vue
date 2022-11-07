@@ -69,6 +69,8 @@ defineExpose({
 
 <style lang="scss" scoped>
 .mk-follow-requests {
+    padding: 28px 32px 18px;
+
 	> .user {
 		display: flex;
 		padding: 16px;

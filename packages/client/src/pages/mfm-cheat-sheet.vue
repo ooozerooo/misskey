@@ -349,6 +349,11 @@ export default defineComponent({
 <style lang="scss" scoped>
 .mwysmxbg {
 	background: var(--bg);
+        padding: 28px 32px 18px;
+
+        > div {
+             padding: 16px 5px;
+        }
 
 	> .section {
 		> .title {

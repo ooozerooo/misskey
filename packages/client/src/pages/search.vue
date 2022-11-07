@@ -34,3 +34,14 @@ defineExpose({
 	})),
 });
 </script>
+
+<style lang="scss" scoped>
+._section {
+       padding: 24px;
+       > ._content {
+         max-width: 800px;
+         margin: 0 auto;
+        }
+}
+</style>
+

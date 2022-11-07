@@ -301,4 +301,11 @@ onUnmounted(() => {
 		}
 	}
 }
+
+.expandTweet {
+  padding-top: 5px;
+  font-style: italic;
+  color: var(--indicator);
+}
+
 </style>

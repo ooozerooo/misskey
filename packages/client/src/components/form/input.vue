@@ -209,7 +209,7 @@ export default defineComponent({
 .matxzzsk {
 	> .label {
 		font-size: 0.85em;
-		padding: 0 0 8px 0;
+		padding: 8px 0 8px 0;
 		user-select: none;
 
 		&:empty {

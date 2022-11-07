@@ -15,7 +15,12 @@
 			"src": "/static-assets/icons/512.png",
 			"sizes": "512x512",
 			"type": "image/png"
-		}
+		},
+		{
+                        "src": "https://files.never.bid/drive/7e0e3026-1fce-4412-a50b-379795dac081.png",
+                        "sizes": "144x144",
+                        "type": "image/png"
+        }
 	],
 	"share_target": {
 		"action": "/share/",

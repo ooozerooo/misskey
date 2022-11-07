@@ -486,6 +486,7 @@ function readPromo() {
 
 					> .text {
 						overflow-wrap: break-word;
+                                                line-height: 1.55em;
 
 						> .reply {
 							color: var(--accent);

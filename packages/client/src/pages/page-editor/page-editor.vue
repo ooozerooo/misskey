@@ -1,5 +1,5 @@
 <template>
-<MkSpacer :content-max="700">
+<MkSpacer :content-max="800">
 	<div class="jqqmcavi">
 		<MkButton v-if="pageId" class="button" inline link :to="`/@${ author.username }/pages/${ currentName }`"><i class="fas fa-external-link-square-alt"></i> {{ $ts._pages.viewPage }}</MkButton>
 		<MkButton v-if="!readonly" inline primary class="button" @click="save"><i class="fas fa-save"></i> {{ $ts.save }}</MkButton>

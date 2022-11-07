@@ -407,7 +407,7 @@ export default Component;
 	}
 
 	> footer {
-		width: 100%;
+		padding: 28px 32px 18px;
 		position: relative;
 
 		> .new-message {

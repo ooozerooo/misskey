@@ -80,7 +80,9 @@ const props = defineProps<{
 			}
 
 			> .content {
-				> .text {
+                               line-height:1.55em;
+
+			       > .text {
 					cursor: default;
 					margin: 0;
 					padding: 0;

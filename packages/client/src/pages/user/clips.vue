@@ -1,7 +1,7 @@
 <template>
 <div>
 	<MkPagination v-slot="{items}" ref="list" :pagination="pagination">
-		<MkA v-for="item in items" :key="item.id" :to="`/clips/${item.id}`" class="item _panel _gap">
+		<MkA v-for="item in items" :key="item.id" :to="`/clips/${item.id}`" class="clippreview">
 			<b>{{ item.name }}</b>
 			<div v-if="item.description" class="description">{{ item.description }}</div>
 		</MkA>
@@ -46,5 +46,12 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-
+.clippreview {
+    display: block;
+    padding: 20px;
+    margin: var(--margin) 0;
+    background: var(--panel);
+    border-radius: var(--radius);
+    overflow: clip;
+}
 </style>
