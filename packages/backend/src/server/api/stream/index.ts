@@ -1,27 +1,25 @@
-import * as websocket from 'websocket';
-import { readNotification } from '../common/read-notification.js';
-import call from '../call.js';
-import readNote from '@/services/note/read.js';
-import Channel from './channel.js';
-import channels from './channels/index.js';
-import { EventEmitter } from 'events';
-import { User } from '@/models/entities/user.js';
-import { Channel as ChannelModel } from '@/models/entities/channel.js';
-import { Users, Followings, Mutings, UserProfiles, ChannelFollowings, Blockings } from '@/models/index.js';
-import { ApiError } from '../error.js';
-import { AccessToken } from '@/models/entities/access-token.js';
-import { UserProfile } from '@/models/entities/user-profile.js';
-import { publishChannelStream, publishGroupMessagingStream, publishMessagingStream } from '@/services/stream.js';
-import { UserGroup } from '@/models/entities/user-group.js';
-import { StreamEventEmitter, StreamMessages } from './types.js';
-import { Packed } from '@/misc/schema.js';
+import type { User } from '@/models/entities/User.js';
+import type { Channel as ChannelModel } from '@/models/entities/Channel.js';
+import type { FollowingsRepository, MutingsRepository, UserProfilesRepository, ChannelFollowingsRepository, BlockingsRepository } from '@/models/index.js';
+import type { AccessToken } from '@/models/entities/AccessToken.js';
+import type { UserProfile } from '@/models/entities/UserProfile.js';
+import type { UserGroup } from '@/models/entities/UserGroup.js';
+import type { Packed } from '@/misc/schema.js';
+import type { GlobalEventService } from '@/core/GlobalEventService.js';
+import type { NoteReadService } from '@/core/NoteReadService.js';
+import type { NotificationService } from '@/core/NotificationService.js';
+import type { ChannelsService } from './ChannelsService.js';
+import type * as websocket from 'websocket';
+import type { EventEmitter } from 'events';
+import type Channel from './channel.js';
+import type { StreamEventEmitter, StreamMessages } from './types.js';
 
 /**
  * Main stream connection
  */
 export default class Connection {
 	public user?: User;
-	public userProfile?: UserProfile;
+	public userProfile?: UserProfile | null;
 	public following: Set<User['id']> = new Set();
 	public muting: Set<User['id']> = new Set();
 	public blocking: Set<User['id']> = new Set(); // "被"blocking
@@ -34,6 +32,16 @@ export default class Connection {
 	private cachedNotes: Packed<'Note'>[] = [];
 
 	constructor(
+		private followingsRepository: FollowingsRepository,
+		private mutingsRepository: MutingsRepository,
+		private blockingsRepository: BlockingsRepository,
+		private channelFollowingsRepository: ChannelFollowingsRepository,
+		private userProfilesRepository: UserProfilesRepository,
+		private channelsService: ChannelsService,
+		private globalEventService: GlobalEventService,
+		private noteReadService: NoteReadService,
+		private notificationService: NotificationService,
+
 		wsConnection: websocket.connection,
 		subscriber: EventEmitter,
 		user: User | null | undefined,
@@ -84,7 +92,7 @@ export default class Connection {
 				this.muting.delete(data.body.id);
 				break;
 
-			// TODO: block events
+				// TODO: block events
 
 			case 'followChannel':
 				this.followingChannels.add(data.body.id);
@@ -126,7 +134,6 @@ export default class Connection {
 		const { type, body } = obj;
 
 		switch (type) {
-			case 'api': this.onApiRequest(body); break;
 			case 'readNotification': this.onReadNotification(body); break;
 			case 'subNote': this.onSubscribeNote(body); break;
 			case 's': this.onSubscribeNote(body); break; // alias
@@ -176,41 +183,16 @@ export default class Connection {
 		if (note == null) return;
 
 		if (this.user && (note.userId !== this.user.id)) {
-			readNote(this.user.id, [note], {
+			this.noteReadService.read(this.user.id, [note], {
 				following: this.following,
 				followingChannels: this.followingChannels,
 			});
 		}
 	}
 
-	/**
-	 * APIリクエスト要求時
-	 */
-	private async onApiRequest(payload: any) {
-		// 新鮮なデータを利用するためにユーザーをフェッチ
-		const user = this.user ? await Users.findOneBy({ id: this.user.id }) : null;
-
-		const endpoint = payload.endpoint || payload.ep; // alias
-
-		// 呼び出し
-		call(endpoint, user, this.token, payload.data).then(res => {
-			this.sendMessageToWs(`api:${payload.id}`, { res });
-		}).catch((e: ApiError) => {
-			this.sendMessageToWs(`api:${payload.id}`, {
-				error: {
-					message: e.message,
-					code: e.code,
-					id: e.id,
-					kind: e.kind,
-					...(e.info ? { info: e.info } : {}),
-				},
-			});
-		});
-	}
-
 	private onReadNotification(payload: any) {
 		if (!payload.id) return;
-		readNotification(this.user!.id, [payload.id]);
+		this.notificationService.readNotification(this.user!.id, [payload.id]);
 	}
 
 	/**
@@ -281,16 +263,18 @@ export default class Connection {
 	 * チャンネルに接続
 	 */
 	public connectChannel(id: string, params: any, channel: string, pong = false) {
-		if ((channels as any)[channel].requireCredential && this.user == null) {
+		const channelService = this.channelsService.getChannelService(channel);
+
+		if (channelService.requireCredential && this.user == null) {
 			return;
 		}
 
 		// 共有可能チャンネルに接続しようとしていて、かつそのチャンネルに既に接続していたら無意味なので無視
-		if ((channels as any)[channel].shouldShare && this.channels.some(c => c.chName === channel)) {
+		if (channelService.shouldShare && this.channels.some(c => c.chName === channel)) {
 			return;
 		}
 
-		const ch: Channel = new (channels as any)[channel](id, this);
+		const ch: Channel = channelService.create(id, this);
 		this.channels.push(ch);
 		ch.init(params);
 
@@ -327,22 +311,22 @@ export default class Connection {
 
 	private typingOnChannel(channel: ChannelModel['id']) {
 		if (this.user) {
-			publishChannelStream(channel, 'typing', this.user.id);
+			this.globalEventService.publishChannelStream(channel, 'typing', this.user.id);
 		}
 	}
 
 	private typingOnMessaging(param: { partner?: User['id']; group?: UserGroup['id']; }) {
 		if (this.user) {
 			if (param.partner) {
-				publishMessagingStream(param.partner, this.user.id, 'typing', this.user.id);
+				this.globalEventService.publishMessagingStream(param.partner, this.user.id, 'typing', this.user.id);
 			} else if (param.group) {
-				publishGroupMessagingStream(param.group, 'typing', this.user.id);
+				this.globalEventService.publishGroupMessagingStream(param.group, 'typing', this.user.id);
 			}
 		}
 	}
 
 	private async updateFollowing() {
-		const followings = await Followings.find({
+		const followings = await this.followingsRepository.find({
 			where: {
 				followerId: this.user!.id,
 			},
@@ -353,7 +337,7 @@ export default class Connection {
 	}
 
 	private async updateMuting() {
-		const mutings = await Mutings.find({
+		const mutings = await this.mutingsRepository.find({
 			where: {
 				muterId: this.user!.id,
 			},
@@ -364,7 +348,7 @@ export default class Connection {
 	}
 
 	private async updateBlocking() { // ここでいうBlockingは被Blockingの意
-		const blockings = await Blockings.find({
+		const blockings = await this.blockingsRepository.find({
 			where: {
 				blockeeId: this.user!.id,
 			},
@@ -375,7 +359,7 @@ export default class Connection {
 	}
 
 	private async updateFollowingChannels() {
-		const followings = await ChannelFollowings.find({
+		const followings = await this.channelFollowingsRepository.find({
 			where: {
 				followerId: this.user!.id,
 			},
@@ -386,7 +370,7 @@ export default class Connection {
 	}
 
 	private async updateUserProfile() {
-		this.userProfile = await UserProfiles.findOneBy({
+		this.userProfile = await this.userProfilesRepository.findOneBy({
 			userId: this.user!.id,
 		});
 	}
