@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { NoteReactionsRepository } from '@/models/index.js';
-import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { Packed } from '@/misc/schema.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { } from '@/models/entities/Blocking.js';
@@ -11,6 +10,7 @@ import type { ReactionService } from '../ReactionService.js';
 import type { UserEntityService } from './UserEntityService.js';
 import type { NoteEntityService } from './NoteEntityService.js';
 import { ModuleRef } from '@nestjs/core';
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class NoteReactionEntityService implements OnModuleInit {
@@ -36,6 +36,7 @@ export class NoteReactionEntityService implements OnModuleInit {
 		this.reactionService = this.moduleRef.get('ReactionService');
 	}
 
+	@bindThis
 	public async pack(
 		src: NoteReaction['id'] | NoteReaction,
 		me?: { id: User['id'] } | null | undefined,

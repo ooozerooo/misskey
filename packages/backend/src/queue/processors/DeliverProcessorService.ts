@@ -1,11 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, InstancesRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
 import { MetaService } from '@/core/MetaService.js';
-import { ApRequestService } from '@/core/remote/activitypub/ApRequestService.js';
+import { ApRequestService } from '@/core/activitypub/ApRequestService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
 import { Cache } from '@/misc/cache.js';
@@ -15,6 +14,7 @@ import ApRequestChart from '@/core/chart/charts/ap-request.js';
 import FederationChart from '@/core/chart/charts/federation.js';
 import { StatusError } from '@/misc/status-error.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type Bull from 'bull';
 import type { DeliverJobData } from '../types.js';
@@ -47,15 +47,15 @@ export class DeliverProcessorService {
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('deliver');
 		this.suspendedHostsCache = new Cache<Instance[]>(1000 * 60 * 60);
-		this.latest = null;
 	}
 
+	@bindThis
 	public async process(job: Bull.Job<DeliverJobData>): Promise<string> {
 		const { host } = new URL(job.data.to);
 
 		// ブロックしてたら中断
 		const meta = await this.metaService.fetch();
-		if (meta.blockedHosts.includes(this.utilityService.toPuny(host))) {
+		if (this.utilityService.isBlockedHost(meta.blockedHosts, this.utilityService.toPuny(host))) {
 			return 'skip (blocked)';
 		}
 
@@ -74,20 +74,18 @@ export class DeliverProcessorService {
 		}
 
 		try {
-			if (this.latest !== (this.latest = JSON.stringify(job.data.content, null, 2))) {
-				this.logger.debug(`delivering ${this.latest}`);
-			}
-
 			await this.apRequestService.signedPost(job.data.user, job.data.to, job.data.content);
 
 			// Update stats
-			this.federatedInstanceService.registerOrFetchInstanceDoc(host).then(i => {
-				this.instancesRepository.update(i.id, {
-					latestRequestSentAt: new Date(),
-					latestStatus: 200,
-					lastCommunicatedAt: new Date(),
-					isNotResponding: false,
-				});
+			this.federatedInstanceService.fetch(host).then(i => {
+				if (i.isNotResponding) {
+					this.instancesRepository.update(i.id, {
+						isNotResponding: false,
+					});
+					this.federatedInstanceService.updateCachePartial(host, {
+						isNotResponding: false,
+					});
+				}
 
 				this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
 
@@ -98,13 +96,16 @@ export class DeliverProcessorService {
 
 			return 'Success';
 		} catch (res) {
-		// Update stats
-			this.federatedInstanceService.registerOrFetchInstanceDoc(host).then(i => {
-				this.instancesRepository.update(i.id, {
-					latestRequestSentAt: new Date(),
-					latestStatus: res instanceof StatusError ? res.statusCode : null,
-					isNotResponding: true,
-				});
+			// Update stats
+			this.federatedInstanceService.fetch(host).then(i => {
+				if (!i.isNotResponding) {
+					this.instancesRepository.update(i.id, {
+						isNotResponding: true,
+					});
+					this.federatedInstanceService.updateCachePartial(host, {
+						isNotResponding: true,
+					});
+				}
 
 				this.instanceChart.requestSent(i.host, false);
 				this.apRequestChart.deliverFail();
@@ -112,17 +113,17 @@ export class DeliverProcessorService {
 			});
 
 			if (res instanceof StatusError) {
-			// 4xx
+				// 4xx
 				if (res.isClientError) {
-				// HTTPステータスコード4xxはクライアントエラーであり、それはつまり
-				// 何回再送しても成功することはないということなのでエラーにはしないでおく
+					// HTTPステータスコード4xxはクライアントエラーであり、それはつまり
+					// 何回再送しても成功することはないということなのでエラーにはしないでおく
 					return `${res.statusCode} ${res.statusMessage}`;
 				}
 
 				// 5xx etc.
 				throw `${res.statusCode} ${res.statusMessage}`;
 			} else {
-			// DNS error, socket error, timeout ...
+				// DNS error, socket error, timeout ...
 				throw res;
 			}
 		}

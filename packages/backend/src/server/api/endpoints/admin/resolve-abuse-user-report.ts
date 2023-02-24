@@ -3,7 +3,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { UsersRepository, AbuseUserReportsRepository } from '@/models/index.js';
 import { InstanceActorService } from '@/core/InstanceActorService.js';
 import { QueueService } from '@/core/QueueService.js';
-import { ApRendererService } from '@/core/remote/activitypub/ApRendererService.js';
+import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { DI } from '@/di-symbols.js';
 
 export const meta = {
@@ -49,7 +49,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				const actor = await this.instanceActorService.getInstanceActor();
 				const targetUser = await this.usersRepository.findOneByOrFail({ id: report.targetUserId });
 
-				this.queueService.deliver(actor, this.apRendererService.renderActivity(this.apRendererService.renderFlag(actor, [targetUser.uri!], report.comment)), targetUser.inbox);
+				this.queueService.deliver(actor, this.apRendererService.addContext(this.apRendererService.renderFlag(actor, targetUser.uri!, report.comment)), targetUser.inbox);
 			}
 
 			await this.abuseUserReportsRepository.update(report.id, {

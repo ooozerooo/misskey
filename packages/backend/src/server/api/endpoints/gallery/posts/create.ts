@@ -7,7 +7,6 @@ import type { DriveFile } from '@/models/entities/DriveFile.js';
 import { IdService } from '@/core/IdService.js';
 import { GalleryPostEntityService } from '@/core/entities/GalleryPostEntityService.js';
 import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../../error.js';
 
 export const meta = {
 	tags: ['gallery'],
@@ -18,7 +17,7 @@ export const meta = {
 
 	limit: {
 		duration: ms('1hour'),
-		max: 300,
+		max: 20,
 	},
 
 	res: {

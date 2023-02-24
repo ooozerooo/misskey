@@ -5,6 +5,7 @@ import { QueueService } from '@/core/QueueService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import type { User } from '@/models/entities/User.js';
 import { DI } from '@/di-symbols.js';
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class UserMutingService {
@@ -17,10 +18,11 @@ export class UserMutingService {
 
 		private idService: IdService,
 		private queueService: QueueService,
-		private globalEventServie: GlobalEventService,
+		private globalEventService: GlobalEventService,
 	) {
 	}
 
+	@bindThis
 	public async mute(user: User, target: User): Promise<void> {
 		await this.mutingsRepository.insert({
 			id: this.idService.genId(),

@@ -5,8 +5,9 @@ import type { Notification } from '@/models/entities/Notification.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import { DI } from '@/di-symbols.js';
-import { NotificationEntityService } from './entities/NotificationEntityService.js';
-import { PushNotificationService } from './PushNotificationService.js';
+import { NotificationEntityService } from '@/core/entities/NotificationEntityService.js';
+import { PushNotificationService } from '@/core/PushNotificationService.js';
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class CreateNotificationService {
@@ -25,11 +26,12 @@ export class CreateNotificationService {
 
 		private notificationEntityService: NotificationEntityService,
 		private idService: IdService,
-		private globalEventServie: GlobalEventService,
+		private globalEventService: GlobalEventService,
 		private pushNotificationService: PushNotificationService,
 	) {
 	}
 
+	@bindThis
 	public async createNotification(
 		notifieeId: User['id'],
 		type: Notification['type'],
@@ -58,7 +60,7 @@ export class CreateNotificationService {
 		const packed = await this.notificationEntityService.pack(notification, {});
 	
 		// Publish notification event
-		this.globalEventServie.publishMainStream(notifieeId, 'notification', packed);
+		this.globalEventService.publishMainStream(notifieeId, 'notification', packed);
 	
 		// 2秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 		setTimeout(async () => {
@@ -75,7 +77,7 @@ export class CreateNotificationService {
 			}
 			//#endregion
 	
-			this.globalEventServie.publishMainStream(notifieeId, 'unreadNotification', packed);
+			this.globalEventService.publishMainStream(notifieeId, 'unreadNotification', packed);
 			this.pushNotificationService.pushNotification(notifieeId, 'notification', packed);
 	
 			if (type === 'follow') this.emailNotificationFollow(notifieeId, await this.usersRepository.findOneByOrFail({ id: data.notifierId! }));
@@ -90,6 +92,7 @@ export class CreateNotificationService {
 
 	// TODO: locale ファイルをクライアント用とサーバー用で分けたい
 
+	@bindThis
 	private async emailNotificationFollow(userId: User['id'], follower: User) {
 		/*
 		const userProfile = await UserProfiles.findOneByOrFail({ userId: userId });
@@ -101,6 +104,7 @@ export class CreateNotificationService {
 		*/
 	}
 	
+	@bindThis
 	private async emailNotificationReceiveFollowRequest(userId: User['id'], follower: User) {
 		/*
 		const userProfile = await UserProfiles.findOneByOrFail({ userId: userId });

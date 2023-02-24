@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import si from 'systeminformation';
 import Xev from 'xev';
 import * as osUtils from 'os-utils';
-import { DI } from '@/di-symbols.js';
+import { bindThis } from '@/decorators.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 const ev = new Xev();
@@ -23,6 +23,7 @@ export class ServerStatsService implements OnApplicationShutdown {
 	/**
 	 * Report server stats regularly
 	 */
+	@bindThis
 	public start(): void {
 		const log = [] as any[];
 
@@ -61,6 +62,7 @@ export class ServerStatsService implements OnApplicationShutdown {
 		this.intervalId = setInterval(tick, interval);
 	}
 
+	@bindThis
 	public onApplicationShutdown(signal?: string | undefined) {
 		clearInterval(this.intervalId);
 	}

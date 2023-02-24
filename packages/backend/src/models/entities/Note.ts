@@ -54,6 +54,7 @@ export class Note {
 	})
 	public threadId: string | null;
 
+	// TODO: varcharにしたい
 	@Column('text', {
 		nullable: true,
 	})

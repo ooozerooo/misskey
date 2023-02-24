@@ -37,9 +37,7 @@ import * as ep___admin_federation_updateInstance from './endpoints/admin/federat
 import * as ep___admin_getIndexStats from './endpoints/admin/get-index-stats.js';
 import * as ep___admin_getTableStats from './endpoints/admin/get-table-stats.js';
 import * as ep___admin_getUserIps from './endpoints/admin/get-user-ips.js';
-import * as ep___admin_invite from './endpoints/admin/invite.js';
-import * as ep___admin_moderators_add from './endpoints/admin/moderators/add.js';
-import * as ep___admin_moderators_remove from './endpoints/admin/moderators/remove.js';
+import * as ep___invite from './endpoints/invite.js';
 import * as ep___admin_promo_create from './endpoints/admin/promo/create.js';
 import * as ep___admin_queue_clear from './endpoints/admin/queue/clear.js';
 import * as ep___admin_queue_deliverDelayed from './endpoints/admin/queue/deliver-delayed.js';
@@ -55,13 +53,20 @@ import * as ep___admin_serverInfo from './endpoints/admin/server-info.js';
 import * as ep___admin_showModerationLogs from './endpoints/admin/show-moderation-logs.js';
 import * as ep___admin_showUser from './endpoints/admin/show-user.js';
 import * as ep___admin_showUsers from './endpoints/admin/show-users.js';
-import * as ep___admin_silenceUser from './endpoints/admin/silence-user.js';
 import * as ep___admin_suspendUser from './endpoints/admin/suspend-user.js';
-import * as ep___admin_unsilenceUser from './endpoints/admin/unsilence-user.js';
 import * as ep___admin_unsuspendUser from './endpoints/admin/unsuspend-user.js';
 import * as ep___admin_updateMeta from './endpoints/admin/update-meta.js';
 import * as ep___admin_deleteAccount from './endpoints/admin/delete-account.js';
 import * as ep___admin_updateUserNote from './endpoints/admin/update-user-note.js';
+import * as ep___admin_roles_create from './endpoints/admin/roles/create.js';
+import * as ep___admin_roles_delete from './endpoints/admin/roles/delete.js';
+import * as ep___admin_roles_list from './endpoints/admin/roles/list.js';
+import * as ep___admin_roles_show from './endpoints/admin/roles/show.js';
+import * as ep___admin_roles_update from './endpoints/admin/roles/update.js';
+import * as ep___admin_roles_assign from './endpoints/admin/roles/assign.js';
+import * as ep___admin_roles_unassign from './endpoints/admin/roles/unassign.js';
+import * as ep___admin_roles_updateDefaultPolicies from './endpoints/admin/roles/update-default-policies.js';
+import * as ep___admin_roles_users from './endpoints/admin/roles/users.js';
 import * as ep___announcements from './endpoints/announcements.js';
 import * as ep___antennas_create from './endpoints/antennas/create.js';
 import * as ep___antennas_delete from './endpoints/antennas/delete.js';
@@ -93,12 +98,12 @@ import * as ep___charts_activeUsers from './endpoints/charts/active-users.js';
 import * as ep___charts_apRequest from './endpoints/charts/ap-request.js';
 import * as ep___charts_drive from './endpoints/charts/drive.js';
 import * as ep___charts_federation from './endpoints/charts/federation.js';
-import * as ep___charts_hashtag from './endpoints/charts/hashtag.js';
 import * as ep___charts_instance from './endpoints/charts/instance.js';
 import * as ep___charts_notes from './endpoints/charts/notes.js';
 import * as ep___charts_user_drive from './endpoints/charts/user/drive.js';
 import * as ep___charts_user_following from './endpoints/charts/user/following.js';
 import * as ep___charts_user_notes from './endpoints/charts/user/notes.js';
+import * as ep___charts_user_pv from './endpoints/charts/user/pv.js';
 import * as ep___charts_user_reactions from './endpoints/charts/user/reactions.js';
 import * as ep___charts_users from './endpoints/charts/users.js';
 import * as ep___clips_addNote from './endpoints/clips/add-note.js';
@@ -166,16 +171,19 @@ import * as ep___i_2fa_keyDone from './endpoints/i/2fa/key-done.js';
 import * as ep___i_2fa_passwordLess from './endpoints/i/2fa/password-less.js';
 import * as ep___i_2fa_registerKey from './endpoints/i/2fa/register-key.js';
 import * as ep___i_2fa_register from './endpoints/i/2fa/register.js';
+import * as ep___i_2fa_updateKey from './endpoints/i/2fa/update-key.js';
 import * as ep___i_2fa_removeKey from './endpoints/i/2fa/remove-key.js';
 import * as ep___i_2fa_unregister from './endpoints/i/2fa/unregister.js';
 import * as ep___i_apps from './endpoints/i/apps.js';
 import * as ep___i_authorizedApps from './endpoints/i/authorized-apps.js';
+import * as ep___i_claimAchievement from './endpoints/i/claim-achievement.js';
 import * as ep___i_changePassword from './endpoints/i/change-password.js';
 import * as ep___i_deleteAccount from './endpoints/i/delete-account.js';
 import * as ep___i_exportBlocking from './endpoints/i/export-blocking.js';
 import * as ep___i_exportFollowing from './endpoints/i/export-following.js';
 import * as ep___i_exportMute from './endpoints/i/export-mute.js';
 import * as ep___i_exportNotes from './endpoints/i/export-notes.js';
+import * as ep___i_exportFavorites from './endpoints/i/export-favorites.js';
 import * as ep___i_exportUserLists from './endpoints/i/export-user-lists.js';
 import * as ep___i_favorites from './endpoints/i/favorites.js';
 import * as ep___i_gallery_likes from './endpoints/i/gallery/likes.js';
@@ -189,7 +197,6 @@ import * as ep___i_notifications from './endpoints/i/notifications.js';
 import * as ep___i_pageLikes from './endpoints/i/page-likes.js';
 import * as ep___i_pages from './endpoints/i/pages.js';
 import * as ep___i_pin from './endpoints/i/pin.js';
-import * as ep___i_readAllMessagingMessages from './endpoints/i/read-all-messaging-messages.js';
 import * as ep___i_readAllUnreadNotes from './endpoints/i/read-all-unread-notes.js';
 import * as ep___i_readAnnouncement from './endpoints/i/read-announcement.js';
 import * as ep___i_regenerateToken from './endpoints/i/regenerate-token.js';
@@ -206,18 +213,13 @@ import * as ep___i_signinHistory from './endpoints/i/signin-history.js';
 import * as ep___i_unpin from './endpoints/i/unpin.js';
 import * as ep___i_updateEmail from './endpoints/i/update-email.js';
 import * as ep___i_update from './endpoints/i/update.js';
-import * as ep___i_userGroupInvites from './endpoints/i/user-group-invites.js';
 import * as ep___i_webhooks_create from './endpoints/i/webhooks/create.js';
 import * as ep___i_webhooks_show from './endpoints/i/webhooks/show.js';
 import * as ep___i_webhooks_list from './endpoints/i/webhooks/list.js';
 import * as ep___i_webhooks_update from './endpoints/i/webhooks/update.js';
 import * as ep___i_webhooks_delete from './endpoints/i/webhooks/delete.js';
-import * as ep___messaging_history from './endpoints/messaging/history.js';
-import * as ep___messaging_messages from './endpoints/messaging/messages.js';
-import * as ep___messaging_messages_create from './endpoints/messaging/messages/create.js';
-import * as ep___messaging_messages_delete from './endpoints/messaging/messages/delete.js';
-import * as ep___messaging_messages_read from './endpoints/messaging/messages/read.js';
 import * as ep___meta from './endpoints/meta.js';
+import * as ep___emojis from './endpoints/emojis.js';
 import * as ep___miauth_genToken from './endpoints/miauth/gen-token.js';
 import * as ep___mute_create from './endpoints/mute/create.js';
 import * as ep___mute_delete from './endpoints/mute/delete.js';
@@ -264,14 +266,28 @@ import * as ep___pages_like from './endpoints/pages/like.js';
 import * as ep___pages_show from './endpoints/pages/show.js';
 import * as ep___pages_unlike from './endpoints/pages/unlike.js';
 import * as ep___pages_update from './endpoints/pages/update.js';
+import * as ep___flash_create from './endpoints/flash/create.js';
+import * as ep___flash_delete from './endpoints/flash/delete.js';
+import * as ep___flash_featured from './endpoints/flash/featured.js';
+import * as ep___flash_like from './endpoints/flash/like.js';
+import * as ep___flash_show from './endpoints/flash/show.js';
+import * as ep___flash_unlike from './endpoints/flash/unlike.js';
+import * as ep___flash_update from './endpoints/flash/update.js';
+import * as ep___flash_my from './endpoints/flash/my.js';
+import * as ep___flash_myLikes from './endpoints/flash/my-likes.js';
 import * as ep___ping from './endpoints/ping.js';
 import * as ep___pinnedUsers from './endpoints/pinned-users.js';
 import * as ep___promo_read from './endpoints/promo/read.js';
+import * as ep___roles_list from './endpoints/roles/list.js';
+import * as ep___roles_show from './endpoints/roles/show.js';
+import * as ep___roles_users from './endpoints/roles/users.js';
 import * as ep___requestResetPassword from './endpoints/request-reset-password.js';
 import * as ep___resetDb from './endpoints/reset-db.js';
 import * as ep___resetPassword from './endpoints/reset-password.js';
 import * as ep___serverInfo from './endpoints/server-info.js';
 import * as ep___stats from './endpoints/stats.js';
+import * as ep___sw_show_registration from './endpoints/sw/show-registration.js';
+import * as ep___sw_update_registration from './endpoints/sw/update-registration.js';
 import * as ep___sw_register from './endpoints/sw/register.js';
 import * as ep___sw_unregister from './endpoints/sw/unregister.js';
 import * as ep___test from './endpoints/test.js';
@@ -282,18 +298,6 @@ import * as ep___users_followers from './endpoints/users/followers.js';
 import * as ep___users_following from './endpoints/users/following.js';
 import * as ep___users_gallery_posts from './endpoints/users/gallery/posts.js';
 import * as ep___users_getFrequentlyRepliedUsers from './endpoints/users/get-frequently-replied-users.js';
-import * as ep___users_groups_create from './endpoints/users/groups/create.js';
-import * as ep___users_groups_delete from './endpoints/users/groups/delete.js';
-import * as ep___users_groups_invitations_accept from './endpoints/users/groups/invitations/accept.js';
-import * as ep___users_groups_invitations_reject from './endpoints/users/groups/invitations/reject.js';
-import * as ep___users_groups_invite from './endpoints/users/groups/invite.js';
-import * as ep___users_groups_joined from './endpoints/users/groups/joined.js';
-import * as ep___users_groups_leave from './endpoints/users/groups/leave.js';
-import * as ep___users_groups_owned from './endpoints/users/groups/owned.js';
-import * as ep___users_groups_pull from './endpoints/users/groups/pull.js';
-import * as ep___users_groups_show from './endpoints/users/groups/show.js';
-import * as ep___users_groups_transfer from './endpoints/users/groups/transfer.js';
-import * as ep___users_groups_update from './endpoints/users/groups/update.js';
 import * as ep___users_lists_create from './endpoints/users/lists/create.js';
 import * as ep___users_lists_delete from './endpoints/users/lists/delete.js';
 import * as ep___users_lists_list from './endpoints/users/lists/list.js';
@@ -311,8 +315,9 @@ import * as ep___users_searchByUsernameAndHost from './endpoints/users/search-by
 import * as ep___users_search from './endpoints/users/search.js';
 import * as ep___users_show from './endpoints/users/show.js';
 import * as ep___users_stats from './endpoints/users/stats.js';
+import * as ep___users_achievements from './endpoints/users/achievements.js';
 import * as ep___fetchRss from './endpoints/fetch-rss.js';
-import * as ep___admin_driveCapOverride from './endpoints/admin/drive-capacity-override.js';
+import * as ep___retention from './endpoints/retention.js';
 import { GetterService } from './GetterService.js';
 import { ApiLoggerService } from './ApiLoggerService.js';
 import type { Provider } from '@nestjs/common';
@@ -353,9 +358,7 @@ const $admin_federation_updateInstance: Provider = { provide: 'ep:admin/federati
 const $admin_getIndexStats: Provider = { provide: 'ep:admin/get-index-stats', useClass: ep___admin_getIndexStats.default };
 const $admin_getTableStats: Provider = { provide: 'ep:admin/get-table-stats', useClass: ep___admin_getTableStats.default };
 const $admin_getUserIps: Provider = { provide: 'ep:admin/get-user-ips', useClass: ep___admin_getUserIps.default };
-const $admin_invite: Provider = { provide: 'ep:admin/invite', useClass: ep___admin_invite.default };
-const $admin_moderators_add: Provider = { provide: 'ep:admin/moderators/add', useClass: ep___admin_moderators_add.default };
-const $admin_moderators_remove: Provider = { provide: 'ep:admin/moderators/remove', useClass: ep___admin_moderators_remove.default };
+const $invite: Provider = { provide: 'ep:invite', useClass: ep___invite.default };
 const $admin_promo_create: Provider = { provide: 'ep:admin/promo/create', useClass: ep___admin_promo_create.default };
 const $admin_queue_clear: Provider = { provide: 'ep:admin/queue/clear', useClass: ep___admin_queue_clear.default };
 const $admin_queue_deliverDelayed: Provider = { provide: 'ep:admin/queue/deliver-delayed', useClass: ep___admin_queue_deliverDelayed.default };
@@ -371,13 +374,20 @@ const $admin_serverInfo: Provider = { provide: 'ep:admin/server-info', useClass:
 const $admin_showModerationLogs: Provider = { provide: 'ep:admin/show-moderation-logs', useClass: ep___admin_showModerationLogs.default };
 const $admin_showUser: Provider = { provide: 'ep:admin/show-user', useClass: ep___admin_showUser.default };
 const $admin_showUsers: Provider = { provide: 'ep:admin/show-users', useClass: ep___admin_showUsers.default };
-const $admin_silenceUser: Provider = { provide: 'ep:admin/silence-user', useClass: ep___admin_silenceUser.default };
 const $admin_suspendUser: Provider = { provide: 'ep:admin/suspend-user', useClass: ep___admin_suspendUser.default };
-const $admin_unsilenceUser: Provider = { provide: 'ep:admin/unsilence-user', useClass: ep___admin_unsilenceUser.default };
 const $admin_unsuspendUser: Provider = { provide: 'ep:admin/unsuspend-user', useClass: ep___admin_unsuspendUser.default };
 const $admin_updateMeta: Provider = { provide: 'ep:admin/update-meta', useClass: ep___admin_updateMeta.default };
 const $admin_deleteAccount: Provider = { provide: 'ep:admin/delete-account', useClass: ep___admin_deleteAccount.default };
 const $admin_updateUserNote: Provider = { provide: 'ep:admin/update-user-note', useClass: ep___admin_updateUserNote.default };
+const $admin_roles_create: Provider = { provide: 'ep:admin/roles/create', useClass: ep___admin_roles_create.default };
+const $admin_roles_delete: Provider = { provide: 'ep:admin/roles/delete', useClass: ep___admin_roles_delete.default };
+const $admin_roles_list: Provider = { provide: 'ep:admin/roles/list', useClass: ep___admin_roles_list.default };
+const $admin_roles_show: Provider = { provide: 'ep:admin/roles/show', useClass: ep___admin_roles_show.default };
+const $admin_roles_update: Provider = { provide: 'ep:admin/roles/update', useClass: ep___admin_roles_update.default };
+const $admin_roles_assign: Provider = { provide: 'ep:admin/roles/assign', useClass: ep___admin_roles_assign.default };
+const $admin_roles_unassign: Provider = { provide: 'ep:admin/roles/unassign', useClass: ep___admin_roles_unassign.default };
+const $admin_roles_updateDefaultPolicies: Provider = { provide: 'ep:admin/roles/update-default-policies', useClass: ep___admin_roles_updateDefaultPolicies.default };
+const $admin_roles_users: Provider = { provide: 'ep:admin/roles/users', useClass: ep___admin_roles_users.default };
 const $announcements: Provider = { provide: 'ep:announcements', useClass: ep___announcements.default };
 const $antennas_create: Provider = { provide: 'ep:antennas/create', useClass: ep___antennas_create.default };
 const $antennas_delete: Provider = { provide: 'ep:antennas/delete', useClass: ep___antennas_delete.default };
@@ -409,12 +419,12 @@ const $charts_activeUsers: Provider = { provide: 'ep:charts/active-users', useCl
 const $charts_apRequest: Provider = { provide: 'ep:charts/ap-request', useClass: ep___charts_apRequest.default };
 const $charts_drive: Provider = { provide: 'ep:charts/drive', useClass: ep___charts_drive.default };
 const $charts_federation: Provider = { provide: 'ep:charts/federation', useClass: ep___charts_federation.default };
-const $charts_hashtag: Provider = { provide: 'ep:charts/hashtag', useClass: ep___charts_hashtag.default };
 const $charts_instance: Provider = { provide: 'ep:charts/instance', useClass: ep___charts_instance.default };
 const $charts_notes: Provider = { provide: 'ep:charts/notes', useClass: ep___charts_notes.default };
 const $charts_user_drive: Provider = { provide: 'ep:charts/user/drive', useClass: ep___charts_user_drive.default };
 const $charts_user_following: Provider = { provide: 'ep:charts/user/following', useClass: ep___charts_user_following.default };
 const $charts_user_notes: Provider = { provide: 'ep:charts/user/notes', useClass: ep___charts_user_notes.default };
+const $charts_user_pv: Provider = { provide: 'ep:charts/user/pv', useClass: ep___charts_user_pv.default };
 const $charts_user_reactions: Provider = { provide: 'ep:charts/user/reactions', useClass: ep___charts_user_reactions.default };
 const $charts_users: Provider = { provide: 'ep:charts/users', useClass: ep___charts_users.default };
 const $clips_addNote: Provider = { provide: 'ep:clips/add-note', useClass: ep___clips_addNote.default };
@@ -482,16 +492,19 @@ const $i_2fa_keyDone: Provider = { provide: 'ep:i/2fa/key-done', useClass: ep___
 const $i_2fa_passwordLess: Provider = { provide: 'ep:i/2fa/password-less', useClass: ep___i_2fa_passwordLess.default };
 const $i_2fa_registerKey: Provider = { provide: 'ep:i/2fa/register-key', useClass: ep___i_2fa_registerKey.default };
 const $i_2fa_register: Provider = { provide: 'ep:i/2fa/register', useClass: ep___i_2fa_register.default };
+const $i_2fa_updateKey: Provider = { provide: 'ep:i/2fa/update-key', useClass: ep___i_2fa_updateKey.default };
 const $i_2fa_removeKey: Provider = { provide: 'ep:i/2fa/remove-key', useClass: ep___i_2fa_removeKey.default };
 const $i_2fa_unregister: Provider = { provide: 'ep:i/2fa/unregister', useClass: ep___i_2fa_unregister.default };
 const $i_apps: Provider = { provide: 'ep:i/apps', useClass: ep___i_apps.default };
 const $i_authorizedApps: Provider = { provide: 'ep:i/authorized-apps', useClass: ep___i_authorizedApps.default };
+const $i_claimAchievement: Provider = { provide: 'ep:i/claim-achievement', useClass: ep___i_claimAchievement.default };
 const $i_changePassword: Provider = { provide: 'ep:i/change-password', useClass: ep___i_changePassword.default };
 const $i_deleteAccount: Provider = { provide: 'ep:i/delete-account', useClass: ep___i_deleteAccount.default };
 const $i_exportBlocking: Provider = { provide: 'ep:i/export-blocking', useClass: ep___i_exportBlocking.default };
 const $i_exportFollowing: Provider = { provide: 'ep:i/export-following', useClass: ep___i_exportFollowing.default };
 const $i_exportMute: Provider = { provide: 'ep:i/export-mute', useClass: ep___i_exportMute.default };
 const $i_exportNotes: Provider = { provide: 'ep:i/export-notes', useClass: ep___i_exportNotes.default };
+const $i_exportFavorites: Provider = { provide: 'ep:i/export-favorites', useClass: ep___i_exportFavorites.default };
 const $i_exportUserLists: Provider = { provide: 'ep:i/export-user-lists', useClass: ep___i_exportUserLists.default };
 const $i_favorites: Provider = { provide: 'ep:i/favorites', useClass: ep___i_favorites.default };
 const $i_gallery_likes: Provider = { provide: 'ep:i/gallery/likes', useClass: ep___i_gallery_likes.default };
@@ -505,7 +518,6 @@ const $i_notifications: Provider = { provide: 'ep:i/notifications', useClass: ep
 const $i_pageLikes: Provider = { provide: 'ep:i/page-likes', useClass: ep___i_pageLikes.default };
 const $i_pages: Provider = { provide: 'ep:i/pages', useClass: ep___i_pages.default };
 const $i_pin: Provider = { provide: 'ep:i/pin', useClass: ep___i_pin.default };
-const $i_readAllMessagingMessages: Provider = { provide: 'ep:i/read-all-messaging-messages', useClass: ep___i_readAllMessagingMessages.default };
 const $i_readAllUnreadNotes: Provider = { provide: 'ep:i/read-all-unread-notes', useClass: ep___i_readAllUnreadNotes.default };
 const $i_readAnnouncement: Provider = { provide: 'ep:i/read-announcement', useClass: ep___i_readAnnouncement.default };
 const $i_regenerateToken: Provider = { provide: 'ep:i/regenerate-token', useClass: ep___i_regenerateToken.default };
@@ -522,18 +534,13 @@ const $i_signinHistory: Provider = { provide: 'ep:i/signin-history', useClass: e
 const $i_unpin: Provider = { provide: 'ep:i/unpin', useClass: ep___i_unpin.default };
 const $i_updateEmail: Provider = { provide: 'ep:i/update-email', useClass: ep___i_updateEmail.default };
 const $i_update: Provider = { provide: 'ep:i/update', useClass: ep___i_update.default };
-const $i_userGroupInvites: Provider = { provide: 'ep:i/user-group-invites', useClass: ep___i_userGroupInvites.default };
 const $i_webhooks_create: Provider = { provide: 'ep:i/webhooks/create', useClass: ep___i_webhooks_create.default };
 const $i_webhooks_list: Provider = { provide: 'ep:i/webhooks/list', useClass: ep___i_webhooks_list.default };
 const $i_webhooks_show: Provider = { provide: 'ep:i/webhooks/show', useClass: ep___i_webhooks_show.default };
 const $i_webhooks_update: Provider = { provide: 'ep:i/webhooks/update', useClass: ep___i_webhooks_update.default };
 const $i_webhooks_delete: Provider = { provide: 'ep:i/webhooks/delete', useClass: ep___i_webhooks_delete.default };
-const $messaging_history: Provider = { provide: 'ep:messaging/history', useClass: ep___messaging_history.default };
-const $messaging_messages: Provider = { provide: 'ep:messaging/messages', useClass: ep___messaging_messages.default };
-const $messaging_messages_create: Provider = { provide: 'ep:messaging/messages/create', useClass: ep___messaging_messages_create.default };
-const $messaging_messages_delete: Provider = { provide: 'ep:messaging/messages/delete', useClass: ep___messaging_messages_delete.default };
-const $messaging_messages_read: Provider = { provide: 'ep:messaging/messages/read', useClass: ep___messaging_messages_read.default };
 const $meta: Provider = { provide: 'ep:meta', useClass: ep___meta.default };
+const $emojis: Provider = { provide: 'ep:emojis', useClass: ep___emojis.default };
 const $miauth_genToken: Provider = { provide: 'ep:miauth/gen-token', useClass: ep___miauth_genToken.default };
 const $mute_create: Provider = { provide: 'ep:mute/create', useClass: ep___mute_create.default };
 const $mute_delete: Provider = { provide: 'ep:mute/delete', useClass: ep___mute_delete.default };
@@ -580,14 +587,28 @@ const $pages_like: Provider = { provide: 'ep:pages/like', useClass: ep___pages_l
 const $pages_show: Provider = { provide: 'ep:pages/show', useClass: ep___pages_show.default };
 const $pages_unlike: Provider = { provide: 'ep:pages/unlike', useClass: ep___pages_unlike.default };
 const $pages_update: Provider = { provide: 'ep:pages/update', useClass: ep___pages_update.default };
+const $flash_create: Provider = { provide: 'ep:flash/create', useClass: ep___flash_create.default };
+const $flash_delete: Provider = { provide: 'ep:flash/delete', useClass: ep___flash_delete.default };
+const $flash_featured: Provider = { provide: 'ep:flash/featured', useClass: ep___flash_featured.default };
+const $flash_like: Provider = { provide: 'ep:flash/like', useClass: ep___flash_like.default };
+const $flash_show: Provider = { provide: 'ep:flash/show', useClass: ep___flash_show.default };
+const $flash_unlike: Provider = { provide: 'ep:flash/unlike', useClass: ep___flash_unlike.default };
+const $flash_update: Provider = { provide: 'ep:flash/update', useClass: ep___flash_update.default };
+const $flash_my: Provider = { provide: 'ep:flash/my', useClass: ep___flash_my.default };
+const $flash_myLikes: Provider = { provide: 'ep:flash/my-likes', useClass: ep___flash_myLikes.default };
 const $ping: Provider = { provide: 'ep:ping', useClass: ep___ping.default };
 const $pinnedUsers: Provider = { provide: 'ep:pinned-users', useClass: ep___pinnedUsers.default };
 const $promo_read: Provider = { provide: 'ep:promo/read', useClass: ep___promo_read.default };
+const $roles_list: Provider = { provide: 'ep:roles/list', useClass: ep___roles_list.default };
+const $roles_show: Provider = { provide: 'ep:roles/show', useClass: ep___roles_show.default };
+const $roles_users: Provider = { provide: 'ep:roles/users', useClass: ep___roles_users.default };
 const $requestResetPassword: Provider = { provide: 'ep:request-reset-password', useClass: ep___requestResetPassword.default };
 const $resetDb: Provider = { provide: 'ep:reset-db', useClass: ep___resetDb.default };
 const $resetPassword: Provider = { provide: 'ep:reset-password', useClass: ep___resetPassword.default };
 const $serverInfo: Provider = { provide: 'ep:server-info', useClass: ep___serverInfo.default };
 const $stats: Provider = { provide: 'ep:stats', useClass: ep___stats.default };
+const $sw_show_registration: Provider = { provide: 'ep:sw/show-registration', useClass: ep___sw_show_registration.default };
+const $sw_update_registration: Provider = { provide: 'ep:sw/update-registration', useClass: ep___sw_update_registration.default };
 const $sw_register: Provider = { provide: 'ep:sw/register', useClass: ep___sw_register.default };
 const $sw_unregister: Provider = { provide: 'ep:sw/unregister', useClass: ep___sw_unregister.default };
 const $test: Provider = { provide: 'ep:test', useClass: ep___test.default };
@@ -598,18 +619,6 @@ const $users_followers: Provider = { provide: 'ep:users/followers', useClass: ep
 const $users_following: Provider = { provide: 'ep:users/following', useClass: ep___users_following.default };
 const $users_gallery_posts: Provider = { provide: 'ep:users/gallery/posts', useClass: ep___users_gallery_posts.default };
 const $users_getFrequentlyRepliedUsers: Provider = { provide: 'ep:users/get-frequently-replied-users', useClass: ep___users_getFrequentlyRepliedUsers.default };
-const $users_groups_create: Provider = { provide: 'ep:users/groups/create', useClass: ep___users_groups_create.default };
-const $users_groups_delete: Provider = { provide: 'ep:users/groups/delete', useClass: ep___users_groups_delete.default };
-const $users_groups_invitations_accept: Provider = { provide: 'ep:users/groups/invitations/accept', useClass: ep___users_groups_invitations_accept.default };
-const $users_groups_invitations_reject: Provider = { provide: 'ep:users/groups/invitations/reject', useClass: ep___users_groups_invitations_reject.default };
-const $users_groups_invite: Provider = { provide: 'ep:users/groups/invite', useClass: ep___users_groups_invite.default };
-const $users_groups_joined: Provider = { provide: 'ep:users/groups/joined', useClass: ep___users_groups_joined.default };
-const $users_groups_leave: Provider = { provide: 'ep:users/groups/leave', useClass: ep___users_groups_leave.default };
-const $users_groups_owned: Provider = { provide: 'ep:users/groups/owned', useClass: ep___users_groups_owned.default };
-const $users_groups_pull: Provider = { provide: 'ep:users/groups/pull', useClass: ep___users_groups_pull.default };
-const $users_groups_show: Provider = { provide: 'ep:users/groups/show', useClass: ep___users_groups_show.default };
-const $users_groups_transfer: Provider = { provide: 'ep:users/groups/transfer', useClass: ep___users_groups_transfer.default };
-const $users_groups_update: Provider = { provide: 'ep:users/groups/update', useClass: ep___users_groups_update.default };
 const $users_lists_create: Provider = { provide: 'ep:users/lists/create', useClass: ep___users_lists_create.default };
 const $users_lists_delete: Provider = { provide: 'ep:users/lists/delete', useClass: ep___users_lists_delete.default };
 const $users_lists_list: Provider = { provide: 'ep:users/lists/list', useClass: ep___users_lists_list.default };
@@ -627,8 +636,9 @@ const $users_searchByUsernameAndHost: Provider = { provide: 'ep:users/search-by-
 const $users_search: Provider = { provide: 'ep:users/search', useClass: ep___users_search.default };
 const $users_show: Provider = { provide: 'ep:users/show', useClass: ep___users_show.default };
 const $users_stats: Provider = { provide: 'ep:users/stats', useClass: ep___users_stats.default };
-const $admin_driveCapOverride: Provider = { provide: 'ep:admin/drive-capacity-override', useClass: ep___admin_driveCapOverride.default };
+const $users_achievements: Provider = { provide: 'ep:users/achievements', useClass: ep___users_achievements.default };
 const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.default };
+const $retention: Provider = { provide: 'ep:retention', useClass: ep___retention.default };
 
 @Module({
 	imports: [
@@ -673,9 +683,7 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$admin_getIndexStats,
 		$admin_getTableStats,
 		$admin_getUserIps,
-		$admin_invite,
-		$admin_moderators_add,
-		$admin_moderators_remove,
+		$invite,
 		$admin_promo_create,
 		$admin_queue_clear,
 		$admin_queue_deliverDelayed,
@@ -691,13 +699,20 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$admin_showModerationLogs,
 		$admin_showUser,
 		$admin_showUsers,
-		$admin_silenceUser,
 		$admin_suspendUser,
-		$admin_unsilenceUser,
 		$admin_unsuspendUser,
 		$admin_updateMeta,
 		$admin_deleteAccount,
 		$admin_updateUserNote,
+		$admin_roles_create,
+		$admin_roles_delete,
+		$admin_roles_list,
+		$admin_roles_show,
+		$admin_roles_update,
+		$admin_roles_assign,
+		$admin_roles_unassign,
+		$admin_roles_updateDefaultPolicies,
+		$admin_roles_users,
 		$announcements,
 		$antennas_create,
 		$antennas_delete,
@@ -729,12 +744,12 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$charts_apRequest,
 		$charts_drive,
 		$charts_federation,
-		$charts_hashtag,
 		$charts_instance,
 		$charts_notes,
 		$charts_user_drive,
 		$charts_user_following,
 		$charts_user_notes,
+		$charts_user_pv,
 		$charts_user_reactions,
 		$charts_users,
 		$clips_addNote,
@@ -802,16 +817,19 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$i_2fa_passwordLess,
 		$i_2fa_registerKey,
 		$i_2fa_register,
+		$i_2fa_updateKey,
 		$i_2fa_removeKey,
 		$i_2fa_unregister,
 		$i_apps,
 		$i_authorizedApps,
+		$i_claimAchievement,
 		$i_changePassword,
 		$i_deleteAccount,
 		$i_exportBlocking,
 		$i_exportFollowing,
 		$i_exportMute,
 		$i_exportNotes,
+		$i_exportFavorites,
 		$i_exportUserLists,
 		$i_favorites,
 		$i_gallery_likes,
@@ -825,7 +843,6 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$i_pageLikes,
 		$i_pages,
 		$i_pin,
-		$i_readAllMessagingMessages,
 		$i_readAllUnreadNotes,
 		$i_readAnnouncement,
 		$i_regenerateToken,
@@ -842,18 +859,13 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$i_unpin,
 		$i_updateEmail,
 		$i_update,
-		$i_userGroupInvites,
 		$i_webhooks_create,
 		$i_webhooks_list,
 		$i_webhooks_show,
 		$i_webhooks_update,
 		$i_webhooks_delete,
-		$messaging_history,
-		$messaging_messages,
-		$messaging_messages_create,
-		$messaging_messages_delete,
-		$messaging_messages_read,
 		$meta,
+		$emojis,
 		$miauth_genToken,
 		$mute_create,
 		$mute_delete,
@@ -900,14 +912,28 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$pages_show,
 		$pages_unlike,
 		$pages_update,
+		$flash_create,
+		$flash_delete,
+		$flash_featured,
+		$flash_like,
+		$flash_show,
+		$flash_unlike,
+		$flash_update,
+		$flash_my,
+		$flash_myLikes,
 		$ping,
 		$pinnedUsers,
 		$promo_read,
+		$roles_list,
+		$roles_show,
+		$roles_users,
 		$requestResetPassword,
 		$resetDb,
 		$resetPassword,
 		$serverInfo,
 		$stats,
+		$sw_show_registration,
+		$sw_update_registration,
 		$sw_register,
 		$sw_unregister,
 		$test,
@@ -918,18 +944,6 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$users_following,
 		$users_gallery_posts,
 		$users_getFrequentlyRepliedUsers,
-		$users_groups_create,
-		$users_groups_delete,
-		$users_groups_invitations_accept,
-		$users_groups_invitations_reject,
-		$users_groups_invite,
-		$users_groups_joined,
-		$users_groups_leave,
-		$users_groups_owned,
-		$users_groups_pull,
-		$users_groups_show,
-		$users_groups_transfer,
-		$users_groups_update,
 		$users_lists_create,
 		$users_lists_delete,
 		$users_lists_list,
@@ -947,8 +961,9 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$users_search,
 		$users_show,
 		$users_stats,
-		$admin_driveCapOverride,
+		$users_achievements,
 		$fetchRss,
+		$retention,
 	],
 	exports: [
 		$admin_meta,
@@ -987,9 +1002,7 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$admin_getIndexStats,
 		$admin_getTableStats,
 		$admin_getUserIps,
-		$admin_invite,
-		$admin_moderators_add,
-		$admin_moderators_remove,
+		$invite,
 		$admin_promo_create,
 		$admin_queue_clear,
 		$admin_queue_deliverDelayed,
@@ -1005,13 +1018,20 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$admin_showModerationLogs,
 		$admin_showUser,
 		$admin_showUsers,
-		$admin_silenceUser,
 		$admin_suspendUser,
-		$admin_unsilenceUser,
 		$admin_unsuspendUser,
 		$admin_updateMeta,
 		$admin_deleteAccount,
 		$admin_updateUserNote,
+		$admin_roles_create,
+		$admin_roles_delete,
+		$admin_roles_list,
+		$admin_roles_show,
+		$admin_roles_update,
+		$admin_roles_assign,
+		$admin_roles_unassign,
+		$admin_roles_updateDefaultPolicies,
+		$admin_roles_users,
 		$announcements,
 		$antennas_create,
 		$antennas_delete,
@@ -1043,12 +1063,12 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$charts_apRequest,
 		$charts_drive,
 		$charts_federation,
-		$charts_hashtag,
 		$charts_instance,
 		$charts_notes,
 		$charts_user_drive,
 		$charts_user_following,
 		$charts_user_notes,
+		$charts_user_pv,
 		$charts_user_reactions,
 		$charts_users,
 		$clips_addNote,
@@ -1116,16 +1136,19 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$i_2fa_passwordLess,
 		$i_2fa_registerKey,
 		$i_2fa_register,
+		$i_2fa_updateKey,
 		$i_2fa_removeKey,
 		$i_2fa_unregister,
 		$i_apps,
 		$i_authorizedApps,
+		$i_claimAchievement,
 		$i_changePassword,
 		$i_deleteAccount,
 		$i_exportBlocking,
 		$i_exportFollowing,
 		$i_exportMute,
 		$i_exportNotes,
+		$i_exportFavorites,
 		$i_exportUserLists,
 		$i_favorites,
 		$i_gallery_likes,
@@ -1139,7 +1162,6 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$i_pageLikes,
 		$i_pages,
 		$i_pin,
-		$i_readAllMessagingMessages,
 		$i_readAllUnreadNotes,
 		$i_readAnnouncement,
 		$i_regenerateToken,
@@ -1156,18 +1178,13 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$i_unpin,
 		$i_updateEmail,
 		$i_update,
-		$i_userGroupInvites,
 		$i_webhooks_create,
 		$i_webhooks_list,
 		$i_webhooks_show,
 		$i_webhooks_update,
 		$i_webhooks_delete,
-		$messaging_history,
-		$messaging_messages,
-		$messaging_messages_create,
-		$messaging_messages_delete,
-		$messaging_messages_read,
 		$meta,
+		$emojis,
 		$miauth_genToken,
 		$mute_create,
 		$mute_delete,
@@ -1214,9 +1231,21 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$pages_show,
 		$pages_unlike,
 		$pages_update,
+		$flash_create,
+		$flash_delete,
+		$flash_featured,
+		$flash_like,
+		$flash_show,
+		$flash_unlike,
+		$flash_update,
+		$flash_my,
+		$flash_myLikes,
 		$ping,
 		$pinnedUsers,
 		$promo_read,
+		$roles_list,
+		$roles_show,
+		$roles_users,
 		$requestResetPassword,
 		$resetDb,
 		$resetPassword,
@@ -1232,18 +1261,6 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$users_following,
 		$users_gallery_posts,
 		$users_getFrequentlyRepliedUsers,
-		$users_groups_create,
-		$users_groups_delete,
-		$users_groups_invitations_accept,
-		$users_groups_invitations_reject,
-		$users_groups_invite,
-		$users_groups_joined,
-		$users_groups_leave,
-		$users_groups_owned,
-		$users_groups_pull,
-		$users_groups_show,
-		$users_groups_transfer,
-		$users_groups_update,
 		$users_lists_create,
 		$users_lists_delete,
 		$users_lists_list,
@@ -1261,8 +1278,9 @@ const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.d
 		$users_search,
 		$users_show,
 		$users_stats,
-		$admin_driveCapOverride,
+		$users_achievements,
 		$fetchRss,
+		$retention,
 	],
 })
 export class EndpointsModule {}

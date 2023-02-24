@@ -1,14 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { IsNull } from 'typeorm';
-import type { ILocalUser, User } from '@/models/entities/User.js';
+import type { LocalUser, User } from '@/models/entities/User.js';
 import type { RelaysRepository, UsersRepository } from '@/models/index.js';
 import { IdService } from '@/core/IdService.js';
 import { Cache } from '@/misc/cache.js';
 import type { Relay } from '@/models/entities/Relay.js';
 import { QueueService } from '@/core/QueueService.js';
 import { CreateSystemUserService } from '@/core/CreateSystemUserService.js';
-import { ApRendererService } from '@/core/remote/activitypub/ApRendererService.js';
+import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { DI } from '@/di-symbols.js';
+import { deepClone } from '@/misc/clone.js';
+import { bindThis } from '@/decorators.js';
 
 const ACTOR_USERNAME = 'relay.actor' as const;
 
@@ -31,18 +33,20 @@ export class RelayService {
 		this.relaysCache = new Cache<Relay[]>(1000 * 60 * 10);
 	}
 
-	private async getRelayActor(): Promise<ILocalUser> {
+	@bindThis
+	private async getRelayActor(): Promise<LocalUser> {
 		const user = await this.usersRepository.findOneBy({
 			host: IsNull(),
 			username: ACTOR_USERNAME,
 		});
 	
-		if (user) return user as ILocalUser;
+		if (user) return user as LocalUser;
 	
 		const created = await this.createSystemUserService.createSystemUser(ACTOR_USERNAME);
-		return created as ILocalUser;
+		return created as LocalUser;
 	}
 
+	@bindThis
 	public async addRelay(inbox: string): Promise<Relay> {
 		const relay = await this.relaysRepository.insert({
 			id: this.idService.genId(),
@@ -52,12 +56,13 @@ export class RelayService {
 	
 		const relayActor = await this.getRelayActor();
 		const follow = await this.apRendererService.renderFollowRelay(relay, relayActor);
-		const activity = this.apRendererService.renderActivity(follow);
+		const activity = this.apRendererService.addContext(follow);
 		this.queueService.deliver(relayActor, activity, relay.inbox);
 	
 		return relay;
 	}
 
+	@bindThis
 	public async removeRelay(inbox: string): Promise<void> {
 		const relay = await this.relaysRepository.findOneBy({
 			inbox,
@@ -70,17 +75,19 @@ export class RelayService {
 		const relayActor = await this.getRelayActor();
 		const follow = this.apRendererService.renderFollowRelay(relay, relayActor);
 		const undo = this.apRendererService.renderUndo(follow, relayActor);
-		const activity = this.apRendererService.renderActivity(undo);
+		const activity = this.apRendererService.addContext(undo);
 		this.queueService.deliver(relayActor, activity, relay.inbox);
 	
 		await this.relaysRepository.delete(relay.id);
 	}
 
+	@bindThis
 	public async listRelay(): Promise<Relay[]> {
 		const relays = await this.relaysRepository.find();
 		return relays;
 	}
 	
+	@bindThis
 	public async relayAccepted(id: string): Promise<string> {
 		const result = await this.relaysRepository.update(id, {
 			status: 'accepted',
@@ -89,6 +96,7 @@ export class RelayService {
 		return JSON.stringify(result);
 	}
 
+	@bindThis
 	public async relayRejected(id: string): Promise<string> {
 		const result = await this.relaysRepository.update(id, {
 			status: 'rejected',
@@ -97,6 +105,7 @@ export class RelayService {
 		return JSON.stringify(result);
 	}
 
+	@bindThis
 	public async deliverToRelays(user: { id: User['id']; host: null; }, activity: any): Promise<void> {
 		if (activity == null) return;
 	
@@ -105,9 +114,7 @@ export class RelayService {
 		}));
 		if (relays.length === 0) return;
 	
-		// TODO
-		//const copy = structuredClone(activity);
-		const copy = JSON.parse(JSON.stringify(activity));
+		const copy = deepClone(activity);
 		if (!copy.to) copy.to = ['https://www.w3.org/ns/activitystreams#Public'];
 	
 		const signed = await this.apRendererService.attachLdSignature(copy, user);

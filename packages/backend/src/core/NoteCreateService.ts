@@ -1,5 +1,5 @@
 import * as mfm from 'mfm-js';
-import { Not, In, DataSource } from 'typeorm';
+import { In, DataSource } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { extractMentions } from '@/misc/extract-mentions.js';
 import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mfm.js';
@@ -11,7 +11,7 @@ import type { DriveFile } from '@/models/entities/DriveFile.js';
 import type { App } from '@/models/entities/App.js';
 import { concat } from '@/misc/prelude/array.js';
 import { IdService } from '@/core/IdService.js';
-import type { User, ILocalUser, IRemoteUser } from '@/models/entities/User.js';
+import type { User, LocalUser, RemoteUser } from '@/models/entities/User.js';
 import type { IPoll } from '@/models/entities/Poll.js';
 import { Poll } from '@/models/entities/Poll.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
@@ -34,12 +34,15 @@ import { WebhookService } from '@/core/WebhookService.js';
 import { HashtagService } from '@/core/HashtagService.js';
 import { AntennaService } from '@/core/AntennaService.js';
 import { QueueService } from '@/core/QueueService.js';
-import { NoteEntityService } from './entities/NoteEntityService.js';
-import { UserEntityService } from './entities/UserEntityService.js';
-import { NoteReadService } from './NoteReadService.js';
-import { ApRendererService } from './remote/activitypub/ApRendererService.js';
-import { ResolveUserService } from './remote/ResolveUserService.js';
-import { ApDeliverManagerService } from './remote/activitypub/ApDeliverManagerService.js';
+import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
+import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
+import { NoteReadService } from '@/core/NoteReadService.js';
+import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
+import { bindThis } from '@/decorators.js';
+import { DB_MAX_NOTE_TEXT_LENGTH } from '@/const.js';
+import { RoleService } from '@/core/RoleService.js';
 
 const mutedWordsCache = new Cache<{ userId: UserProfile['userId']; mutedWords: UserProfile['mutedWords']; }[]>(1000 * 60 * 5);
 
@@ -49,7 +52,7 @@ class NotificationManager {
 	private notifier: { id: User['id']; };
 	private note: Note;
 	private queue: {
-		target: ILocalUser['id'];
+		target: LocalUser['id'];
 		reason: NotificationType;
 	}[];
 
@@ -64,7 +67,8 @@ class NotificationManager {
 		this.queue = [];
 	}
 
-	public push(notifiee: ILocalUser['id'], reason: NotificationType) {
+	@bindThis
+	public push(notifiee: LocalUser['id'], reason: NotificationType) {
 		// 自分自身へは通知しない
 		if (this.notifier.id === notifiee) return;
 
@@ -83,6 +87,7 @@ class NotificationManager {
 		}
 	}
 
+	@bindThis
 	public async deliver() {
 		for (const x of this.queue) {
 			// ミュート情報を取得
@@ -170,7 +175,7 @@ export class NoteCreateService {
 		private userEntityService: UserEntityService,
 		private noteEntityService: NoteEntityService,
 		private idService: IdService,
-		private globalEventServie: GlobalEventService,
+		private globalEventService: GlobalEventService,
 		private queueService: QueueService,
 		private noteReadService: NoteReadService,
 		private createNotificationService: CreateNotificationService,
@@ -179,21 +184,23 @@ export class NoteCreateService {
 		private hashtagService: HashtagService,
 		private antennaService: AntennaService,
 		private webhookService: WebhookService,
-		private resolveUserService: ResolveUserService,
+		private remoteUserResolveService: RemoteUserResolveService,
 		private apDeliverManagerService: ApDeliverManagerService,
 		private apRendererService: ApRendererService,
+		private roleService: RoleService,
 		private notesChart: NotesChart,
 		private perUserNotesChart: PerUserNotesChart,
 		private activeUsersChart: ActiveUsersChart,
 		private instanceChart: InstanceChart,
 	) {}
 
+	@bindThis
 	public async create(user: {
 		id: User['id'];
 		username: User['username'];
 		host: User['host'];
-		isSilenced: User['isSilenced'];
 		createdAt: User['createdAt'];
+		isBot: User['isBot'];
 	}, data: Option, silent = false): Promise<Note> {
 		// チャンネル外にリプライしたら対象のスコープに合わせる
 		// (クライアントサイドでやっても良い処理だと思うけどとりあえずサーバーサイドで)
@@ -218,9 +225,10 @@ export class NoteCreateService {
 		if (data.channel != null) data.visibleUsers = [];
 		if (data.channel != null) data.localOnly = true;
 
-		// サイレンス
-		if (user.isSilenced && data.visibility === 'public' && data.channel == null) {
-			data.visibility = 'home';
+		if (data.visibility === 'public' && data.channel == null) {
+			if ((await this.roleService.getUserPolicies(user.id)).canPublicNote === false) {
+				data.visibility = 'home';
+			}
 		}
 
 		// Renote対象が「ホームまたは全体」以外の公開範囲ならreject
@@ -254,6 +262,9 @@ export class NoteCreateService {
 		}
 
 		if (data.text) {
+			if (data.text.length > DB_MAX_NOTE_TEXT_LENGTH) {
+				data.text = data.text.slice(0, DB_MAX_NOTE_TEXT_LENGTH);
+			}
 			data.text = data.text.trim();
 		} else {
 			data.text = null;
@@ -307,6 +318,7 @@ export class NoteCreateService {
 		return note;
 	}
 
+	@bindThis
 	private async insertNote(user: { id: User['id']; host: User['host']; }, data: Option, tags: string[], emojis: string[], mentionedUsers: MinimumUser[]) {
 		const insert = new Note({
 			id: this.idService.genId(data.createdAt!),
@@ -403,12 +415,13 @@ export class NoteCreateService {
 		}
 	}
 
+	@bindThis
 	private async postNoteCreated(note: Note, user: {
 		id: User['id'];
 		username: User['username'];
 		host: User['host'];
-		isSilenced: User['isSilenced'];
 		createdAt: User['createdAt'];
+		isBot: User['isBot'];
 	}, data: Option, silent: boolean, tags: string[], mentionedUsers: MinimumUser[]) {
 		// 統計を更新
 		this.notesChart.update(note, true);
@@ -416,7 +429,7 @@ export class NoteCreateService {
 
 		// Register host
 		if (this.userEntityService.isRemoteUser(user)) {
-			this.federatedInstanceService.registerOrFetchInstanceDoc(user.host).then(i => {
+			this.federatedInstanceService.fetch(user.host).then(i => {
 				this.instancesRepository.increment({ id: i.id }, 'notesCount', 1);
 				this.instanceChart.updateNote(i.host, note, true);
 			});
@@ -478,7 +491,7 @@ export class NoteCreateService {
 
 		// この投稿を除く指定したユーザーによる指定したノートのリノートが存在しないとき
 		if (data.renote && (await this.noteEntityService.countSameRenotes(user.id, data.renote.id, note.id) === 0)) {
-			this.incRenoteCount(data.renote);
+			if (!user.isBot) this.incRenoteCount(data.renote);
 		}
 
 		if (data.poll && data.poll.expiresAt) {
@@ -522,7 +535,7 @@ export class NoteCreateService {
 			// Pack the note
 			const noteObj = await this.noteEntityService.pack(note);
 
-			this.globalEventServie.publishNotesStream(noteObj);
+			this.globalEventService.publishNotesStream(noteObj);
 
 			this.webhookService.getActiveWebhooks().then(webhooks => {
 				webhooks = webhooks.filter(x => x.userId === user.id && x.on.includes('note'));
@@ -548,7 +561,7 @@ export class NoteCreateService {
 
 					if (!threadMuted) {
 						nm.push(data.reply.userId, 'reply');
-						this.globalEventServie.publishMainStream(data.reply.userId, 'reply', noteObj);
+						this.globalEventService.publishMainStream(data.reply.userId, 'reply', noteObj);
 
 						const webhooks = (await this.webhookService.getActiveWebhooks()).filter(x => x.userId === data.reply!.userId && x.on.includes('reply'));
 						for (const webhook of webhooks) {
@@ -571,7 +584,7 @@ export class NoteCreateService {
 
 				// Publish event
 				if ((user.id !== data.renote.userId) && data.renote.userHost === null) {
-					this.globalEventServie.publishMainStream(data.renote.userId, 'renote', noteObj);
+					this.globalEventService.publishMainStream(data.renote.userId, 'renote', noteObj);
 
 					const webhooks = (await this.webhookService.getActiveWebhooks()).filter(x => x.userId === data.renote!.userId && x.on.includes('renote'));
 					for (const webhook of webhooks) {
@@ -592,7 +605,7 @@ export class NoteCreateService {
 
 					// メンションされたリモートユーザーに配送
 					for (const u of mentionedUsers.filter(u => this.userEntityService.isRemoteUser(u))) {
-						dm.addDirectRecipe(u as IRemoteUser);
+						dm.addDirectRecipe(u as RemoteUser);
 					}
 
 					// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
@@ -644,6 +657,7 @@ export class NoteCreateService {
 		this.index(note);
 	}
 
+	@bindThis
 	private incRenoteCount(renote: Note) {
 		this.notesRepository.createQueryBuilder().update()
 			.set({
@@ -654,6 +668,7 @@ export class NoteCreateService {
 			.execute();
 	}
 
+	@bindThis
 	private async createMentionedEvents(mentionedUsers: MinimumUser[], note: Note, nm: NotificationManager) {
 		for (const u of mentionedUsers.filter(u => this.userEntityService.isLocalUser(u))) {
 			const threadMuted = await this.noteThreadMutingsRepository.findOneBy({
@@ -669,7 +684,7 @@ export class NoteCreateService {
 				detail: true,
 			});
 
-			this.globalEventServie.publishMainStream(u.id, 'mention', detailPackedNote);
+			this.globalEventService.publishMainStream(u.id, 'mention', detailPackedNote);
 
 			const webhooks = (await this.webhookService.getActiveWebhooks()).filter(x => x.userId === u.id && x.on.includes('mention'));
 			for (const webhook of webhooks) {
@@ -683,10 +698,12 @@ export class NoteCreateService {
 		}
 	}
 
+	@bindThis
 	private saveReply(reply: Note, note: Note) {
 		this.notesRepository.increment({ id: reply.id }, 'repliesCount', 1);
 	}
 
+	@bindThis
 	private async renderNoteOrRenoteActivity(data: Option, note: Note) {
 		if (data.localOnly) return null;
 
@@ -694,9 +711,10 @@ export class NoteCreateService {
 			? this.apRendererService.renderAnnounce(data.renote.uri ? data.renote.uri : `${this.config.url}/notes/${data.renote.id}`, note)
 			: this.apRendererService.renderCreate(await this.apRendererService.renderNote(note, false), note);
 
-		return this.apRendererService.renderActivity(content);
+		return this.apRendererService.addContext(content);
 	}
 
+	@bindThis
 	private index(note: Note) {
 		if (note.text == null || this.config.elasticsearch == null) return;
 		/*
@@ -711,6 +729,7 @@ export class NoteCreateService {
 	});*/
 	}
 
+	@bindThis
 	private incNotesCountOfUser(user: { id: User['id']; }) {
 		this.usersRepository.createQueryBuilder().update()
 			.set({
@@ -721,12 +740,13 @@ export class NoteCreateService {
 			.execute();
 	}
 
+	@bindThis
 	private async extractMentionedUsers(user: { host: User['host']; }, tokens: mfm.MfmNode[]): Promise<User[]> {
 		if (tokens == null) return [];
 
 		const mentions = extractMentions(tokens);
 		let mentionedUsers = (await Promise.all(mentions.map(m =>
-			this.resolveUserService.resolveUser(m.username, m.host ?? user.host).catch(() => null),
+			this.remoteUserResolveService.resolveUser(m.username, m.host ?? user.host).catch(() => null),
 		))).filter(x => x != null) as User[];
 
 		// Drop duplicate users

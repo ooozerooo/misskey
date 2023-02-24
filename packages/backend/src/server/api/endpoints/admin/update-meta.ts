@@ -2,10 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import type { Meta } from '@/models/entities/Meta.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { DB_MAX_NOTE_TEXT_LENGTH } from '@/misc/hard-limits.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { MetaService } from '@/core/MetaService.js';
 
 export const meta = {
@@ -19,8 +17,6 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		disableRegistration: { type: 'boolean', nullable: true },
-		disableLocalTimeline: { type: 'boolean', nullable: true },
-		disableGlobalTimeline: { type: 'boolean', nullable: true },
 		useStarForReactionFallback: { type: 'boolean', nullable: true },
 		pinnedUsers: { type: 'array', nullable: true, items: {
 			type: 'string',
@@ -42,8 +38,6 @@ export const paramDef = {
 		description: { type: 'string', nullable: true },
 		defaultLightTheme: { type: 'string', nullable: true },
 		defaultDarkTheme: { type: 'string', nullable: true },
-		localDriveCapacityMb: { type: 'integer' },
-		remoteDriveCapacityMb: { type: 'integer' },
 		cacheRemoteFiles: { type: 'boolean' },
 		emailRequiredForSignup: { type: 'boolean' },
 		enableHcaptcha: { type: 'boolean' },
@@ -72,15 +66,6 @@ export const paramDef = {
 		summalyProxy: { type: 'string', nullable: true },
 		deeplAuthKey: { type: 'string', nullable: true },
 		deeplIsPro: { type: 'boolean' },
-		enableTwitterIntegration: { type: 'boolean' },
-		twitterConsumerKey: { type: 'string', nullable: true },
-		twitterConsumerSecret: { type: 'string', nullable: true },
-		enableGithubIntegration: { type: 'boolean' },
-		githubClientId: { type: 'string', nullable: true },
-		githubClientSecret: { type: 'string', nullable: true },
-		enableDiscordIntegration: { type: 'boolean' },
-		discordClientId: { type: 'string', nullable: true },
-		discordClientSecret: { type: 'string', nullable: true },
 		enableEmail: { type: 'boolean' },
 		email: { type: 'string', nullable: true },
 		smtpSecure: { type: 'boolean' },
@@ -130,14 +115,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				set.disableRegistration = ps.disableRegistration;
 			}
 
-			if (typeof ps.disableLocalTimeline === 'boolean') {
-				set.disableLocalTimeline = ps.disableLocalTimeline;
-			}
-
-			if (typeof ps.disableGlobalTimeline === 'boolean') {
-				set.disableGlobalTimeline = ps.disableGlobalTimeline;
-			}
-
 			if (typeof ps.useStarForReactionFallback === 'boolean') {
 				set.useStarForReactionFallback = ps.useStarForReactionFallback;
 			}
@@ -151,7 +128,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			}
 
 			if (Array.isArray(ps.blockedHosts)) {
-				set.blockedHosts = ps.blockedHosts.filter(Boolean);
+				set.blockedHosts = ps.blockedHosts.filter(Boolean).map(x => x.toLowerCase());
 			}
 
 			if (ps.themeColor !== undefined) {
@@ -192,14 +169,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.defaultDarkTheme !== undefined) {
 				set.defaultDarkTheme = ps.defaultDarkTheme;
-			}
-
-			if (ps.localDriveCapacityMb !== undefined) {
-				set.localDriveCapacityMb = ps.localDriveCapacityMb;
-			}
-
-			if (ps.remoteDriveCapacityMb !== undefined) {
-				set.remoteDriveCapacityMb = ps.remoteDriveCapacityMb;
 			}
 
 			if (ps.cacheRemoteFiles !== undefined) {
@@ -288,42 +257,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.summalyProxy !== undefined) {
 				set.summalyProxy = ps.summalyProxy;
-			}
-
-			if (ps.enableTwitterIntegration !== undefined) {
-				set.enableTwitterIntegration = ps.enableTwitterIntegration;
-			}
-
-			if (ps.twitterConsumerKey !== undefined) {
-				set.twitterConsumerKey = ps.twitterConsumerKey;
-			}
-
-			if (ps.twitterConsumerSecret !== undefined) {
-				set.twitterConsumerSecret = ps.twitterConsumerSecret;
-			}
-
-			if (ps.enableGithubIntegration !== undefined) {
-				set.enableGithubIntegration = ps.enableGithubIntegration;
-			}
-
-			if (ps.githubClientId !== undefined) {
-				set.githubClientId = ps.githubClientId;
-			}
-
-			if (ps.githubClientSecret !== undefined) {
-				set.githubClientSecret = ps.githubClientSecret;
-			}
-
-			if (ps.enableDiscordIntegration !== undefined) {
-				set.enableDiscordIntegration = ps.enableDiscordIntegration;
-			}
-
-			if (ps.discordClientId !== undefined) {
-				set.discordClientId = ps.discordClientId;
-			}
-
-			if (ps.discordClientSecret !== undefined) {
-				set.discordClientSecret = ps.discordClientSecret;
 			}
 
 			if (ps.enableEmail !== undefined) {

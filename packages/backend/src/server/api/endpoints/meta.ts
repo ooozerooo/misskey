@@ -1,14 +1,13 @@
-import { IsNull, MoreThan } from 'typeorm';
+import { IsNull, LessThanOrEqual, MoreThan } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import type { AdsRepository, EmojisRepository, UsersRepository } from '@/models/index.js';
-import { DB_MAX_NOTE_TEXT_LENGTH } from '@/misc/hard-limits.js';
+import type { AdsRepository, UsersRepository } from '@/models/index.js';
 import { MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
 import { MetaService } from '@/core/MetaService.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
+import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -79,22 +78,6 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
-			disableLocalTimeline: {
-				type: 'boolean',
-				optional: false, nullable: false,
-			},
-			disableGlobalTimeline: {
-				type: 'boolean',
-				optional: false, nullable: false,
-			},
-			driveCapacityPerLocalUserMb: {
-				type: 'number',
-				optional: false, nullable: false,
-			},
-			driveCapacityPerRemoteUserMb: {
-				type: 'number',
-				optional: false, nullable: false,
-			},
 			cacheRemoteFiles: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -153,43 +136,6 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
-			emojis: {
-				type: 'array',
-				optional: false, nullable: false,
-				items: {
-					type: 'object',
-					optional: false, nullable: false,
-					properties: {
-						id: {
-							type: 'string',
-							optional: false, nullable: false,
-							format: 'id',
-						},
-						aliases: {
-							type: 'array',
-							optional: false, nullable: false,
-							items: {
-								type: 'string',
-								optional: false, nullable: false,
-							},
-						},
-						category: {
-							type: 'string',
-							optional: false, nullable: true,
-						},
-						host: {
-							type: 'string',
-							optional: false, nullable: true,
-							description: 'The local host is represented with `null`.',
-						},
-						url: {
-							type: 'string',
-							optional: false, nullable: false,
-							format: 'url',
-						},
-					},
-				},
-			},
 			ads: {
 				type: 'array',
 				optional: false, nullable: false,
@@ -223,18 +169,6 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
-			enableTwitterIntegration: {
-				type: 'boolean',
-				optional: false, nullable: false,
-			},
-			enableGithubIntegration: {
-				type: 'boolean',
-				optional: false, nullable: false,
-			},
-			enableDiscordIntegration: {
-				type: 'boolean',
-				optional: false, nullable: false,
-			},
 			enableServiceWorker: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -246,6 +180,10 @@ export const meta = {
 			proxyAccountName: {
 				type: 'string',
 				optional: false, nullable: true,
+			},
+			mediaProxy: {
+				type: 'string',
+				optional: false, nullable: false,
 			},
 			features: {
 				type: 'object',
@@ -276,18 +214,6 @@ export const meta = {
 						optional: false, nullable: false,
 					},
 					objectStorage: {
-						type: 'boolean',
-						optional: false, nullable: false,
-					},
-					twitter: {
-						type: 'boolean',
-						optional: false, nullable: false,
-					},
-					github: {
-						type: 'boolean',
-						optional: false, nullable: false,
-					},
-					discord: {
 						type: 'boolean',
 						optional: false, nullable: false,
 					},
@@ -327,33 +253,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		@Inject(DI.adsRepository)
 		private adsRepository: AdsRepository,
 
-		@Inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-
 		private userEntityService: UserEntityService,
-		private emojiEntityService: EmojiEntityService,
 		private metaService: MetaService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const instance = await this.metaService.fetch(true);
 
-			const emojis = await this.emojisRepository.find({
-				where: {
-					host: IsNull(),
-				},
-				order: {
-					category: 'ASC',
-					name: 'ASC',
-				},
-				cache: {
-					id: 'meta_emojis',
-					milliseconds: 3600000,	// 1 hour
-				},
-			});
-
 			const ads = await this.adsRepository.find({
 				where: {
 					expiresAt: MoreThan(new Date()),
+					startsAt: LessThanOrEqual(new Date()),
 				},
 			});
 
@@ -371,10 +280,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				repositoryUrl: instance.repositoryUrl,
 				feedbackUrl: instance.feedbackUrl,
 				disableRegistration: instance.disableRegistration,
-				disableLocalTimeline: instance.disableLocalTimeline,
-				disableGlobalTimeline: instance.disableGlobalTimeline,
-				driveCapacityPerLocalUserMb: instance.localDriveCapacityMb,
-				driveCapacityPerRemoteUserMb: instance.remoteDriveCapacityMb,
 				emailRequiredForSignup: instance.emailRequiredForSignup,
 				enableHcaptcha: instance.enableHcaptcha,
 				hcaptchaSiteKey: instance.hcaptchaSiteKey,
@@ -390,8 +295,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				iconUrl: instance.iconUrl,
 				backgroundImageUrl: instance.backgroundImageUrl,
 				logoImageUrl: instance.logoImageUrl,
-				maxNoteTextLength: MAX_NOTE_TEXT_LENGTH, // 後方互換性のため
-				emojis: await this.emojiEntityService.packMany(emojis),
+				maxNoteTextLength: MAX_NOTE_TEXT_LENGTH,
 				defaultLightTheme: instance.defaultLightTheme,
 				defaultDarkTheme: instance.defaultDarkTheme,
 				ads: ads.map(ad => ({
@@ -402,14 +306,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 					imageUrl: ad.imageUrl,
 				})),
 				enableEmail: instance.enableEmail,
-
-				enableTwitterIntegration: instance.enableTwitterIntegration,
-				enableGithubIntegration: instance.enableGithubIntegration,
-				enableDiscordIntegration: instance.enableDiscordIntegration,
-
 				enableServiceWorker: instance.enableServiceWorker,
 
 				translatorAvailable: instance.deeplAuthKey != null,
+
+				policies: { ...DEFAULT_POLICIES, ...instance.policies },
+
+				mediaProxy: this.config.mediaProxy,
 
 				...(ps.detail ? {
 					pinnedPages: instance.pinnedPages,
@@ -427,17 +330,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				response.proxyAccountName = proxyAccount ? proxyAccount.username : null;
 				response.features = {
 					registration: !instance.disableRegistration,
-					localTimeLine: !instance.disableLocalTimeline,
-					globalTimeLine: !instance.disableGlobalTimeline,
 					emailRequiredForSignup: instance.emailRequiredForSignup,
 					elasticsearch: this.config.elasticsearch ? true : false,
 					hcaptcha: instance.enableHcaptcha,
 					recaptcha: instance.enableRecaptcha,
 					turnstile: instance.enableTurnstile,
 					objectStorage: instance.useObjectStorage,
-					twitter: instance.enableTwitterIntegration,
-					github: instance.enableGithubIntegration,
-					discord: instance.enableDiscordIntegration,
 					serviceWorker: instance.enableServiceWorker,
 					miauth: true,
 				};

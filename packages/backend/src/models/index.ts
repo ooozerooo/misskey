@@ -22,7 +22,6 @@ import { GalleryLike } from '@/models/entities/GalleryLike.js';
 import { GalleryPost } from '@/models/entities/GalleryPost.js';
 import { Hashtag } from '@/models/entities/Hashtag.js';
 import { Instance } from '@/models/entities/Instance.js';
-import { MessagingMessage } from '@/models/entities/MessagingMessage.js';
 import { Meta } from '@/models/entities/Meta.js';
 import { ModerationLog } from '@/models/entities/ModerationLog.js';
 import { MutedNote } from '@/models/entities/MutedNote.js';
@@ -40,16 +39,13 @@ import { Poll } from '@/models/entities/Poll.js';
 import { PollVote } from '@/models/entities/PollVote.js';
 import { PromoNote } from '@/models/entities/PromoNote.js';
 import { PromoRead } from '@/models/entities/PromoRead.js';
-import { RegistrationTicket } from '@/models/entities/RegistrationTickets.js';
+import { RegistrationTicket } from '@/models/entities/RegistrationTicket.js';
 import { RegistryItem } from '@/models/entities/RegistryItem.js';
 import { Relay } from '@/models/entities/Relay.js';
 import { Signin } from '@/models/entities/Signin.js';
 import { SwSubscription } from '@/models/entities/SwSubscription.js';
 import { UsedUsername } from '@/models/entities/UsedUsername.js';
 import { User } from '@/models/entities/User.js';
-import { UserGroup } from '@/models/entities/UserGroup.js';
-import { UserGroupInvitation } from '@/models/entities/UserGroupInvitation.js';
-import { UserGroupJoining } from '@/models/entities/UserGroupJoining.js';
 import { UserIp } from '@/models/entities/UserIp.js';
 import { UserKeypair } from '@/models/entities/UserKeypair.js';
 import { UserList } from '@/models/entities/UserList.js';
@@ -61,6 +57,11 @@ import { UserPublickey } from '@/models/entities/UserPublickey.js';
 import { UserSecurityKey } from '@/models/entities/UserSecurityKey.js';
 import { Webhook } from '@/models/entities/Webhook.js';
 import { Channel } from '@/models/entities/Channel.js';
+import { RetentionAggregation } from '@/models/entities/RetentionAggregation.js';
+import { Role } from '@/models/entities/Role.js';
+import { RoleAssignment } from '@/models/entities/RoleAssignment.js';
+import { Flash } from '@/models/entities/Flash.js';
+import { FlashLike } from '@/models/entities/FlashLike.js';
 import type { Repository } from 'typeorm';
 
 export {
@@ -88,7 +89,6 @@ export {
 	GalleryPost,
 	Hashtag,
 	Instance,
-	MessagingMessage,
 	Meta,
 	ModerationLog,
 	MutedNote,
@@ -113,9 +113,6 @@ export {
 	SwSubscription,
 	UsedUsername,
 	User,
-	UserGroup,
-	UserGroupInvitation,
-	UserGroupJoining,
 	UserIp,
 	UserKeypair,
 	UserList,
@@ -127,6 +124,11 @@ export {
 	UserSecurityKey,
 	Webhook,
 	Channel,
+	RetentionAggregation,
+	Role,
+	RoleAssignment,
+	Flash,
+	FlashLike,
 };
 
 export type AbuseUserReportsRepository = Repository<AbuseUserReport>;
@@ -153,7 +155,6 @@ export type GalleryLikesRepository = Repository<GalleryLike>;
 export type GalleryPostsRepository = Repository<GalleryPost>;
 export type HashtagsRepository = Repository<Hashtag>;
 export type InstancesRepository = Repository<Instance>;
-export type MessagingMessagesRepository = Repository<MessagingMessage>;
 export type MetasRepository = Repository<Meta>;
 export type ModerationLogsRepository = Repository<ModerationLog>;
 export type MutedNotesRepository = Repository<MutedNote>;
@@ -178,9 +179,6 @@ export type SigninsRepository = Repository<Signin>;
 export type SwSubscriptionsRepository = Repository<SwSubscription>;
 export type UsedUsernamesRepository = Repository<UsedUsername>;
 export type UsersRepository = Repository<User>;
-export type UserGroupsRepository = Repository<UserGroup>;
-export type UserGroupInvitationsRepository = Repository<UserGroupInvitation>;
-export type UserGroupJoiningsRepository = Repository<UserGroupJoining>;
 export type UserIpsRepository = Repository<UserIp>;
 export type UserKeypairsRepository = Repository<UserKeypair>;
 export type UserListsRepository = Repository<UserList>;
@@ -192,3 +190,8 @@ export type UserPublickeysRepository = Repository<UserPublickey>;
 export type UserSecurityKeysRepository = Repository<UserSecurityKey>;
 export type WebhooksRepository = Repository<Webhook>;
 export type ChannelsRepository = Repository<Channel>;
+export type RetentionAggregationsRepository = Repository<RetentionAggregation>;
+export type RolesRepository = Repository<Role>;
+export type RoleAssignmentsRepository = Repository<RoleAssignment>;
+export type FlashsRepository = Repository<Flash>;
+export type FlashLikesRepository = Repository<FlashLike>;

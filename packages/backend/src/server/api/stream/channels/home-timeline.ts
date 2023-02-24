@@ -1,10 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import type { NotesRepository } from '@/models/index.js';
+import { Injectable } from '@nestjs/common';
 import { checkWordMute } from '@/misc/check-word-mute.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { isInstanceMuted } from '@/misc/is-instance-muted.js';
 import type { Packed } from '@/misc/schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { bindThis } from '@/decorators.js';
 import Channel from '../channel.js';
 
 class HomeTimelineChannel extends Channel {
@@ -19,14 +19,16 @@ class HomeTimelineChannel extends Channel {
 		connection: Channel['connection'],
 	) {
 		super(id, connection);
-		this.onNote = this.onNote.bind(this);
+		//this.onNote = this.onNote.bind(this);
 	}
 
+	@bindThis
 	public async init(params: any) {
 		// Subscribe events
 		this.subscriber.on('notesStream', this.onNote);
 	}
 
+	@bindThis
 	private async onNote(note: Packed<'Note'>) {
 		if (note.channelId) {
 			if (!this.followingChannels.has(note.channelId)) return;
@@ -85,6 +87,7 @@ class HomeTimelineChannel extends Channel {
 		this.send('note', note);
 	}
 
+	@bindThis
 	public dispose() {
 		// Unsubscribe events
 		this.subscriber.off('notesStream', this.onNote);
@@ -101,6 +104,7 @@ export class HomeTimelineChannelService {
 	) {
 	}
 
+	@bindThis
 	public create(id: string, connection: Channel['connection']): HomeTimelineChannel {
 		return new HomeTimelineChannel(
 			this.noteEntityService,

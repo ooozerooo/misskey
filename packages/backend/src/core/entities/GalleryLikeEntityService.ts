@@ -1,13 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { GalleryLikesRepository } from '@/models/index.js';
-import { awaitAll } from '@/misc/prelude/await-all.js';
-import type { Packed } from '@/misc/schema.js';
 import type { } from '@/models/entities/Blocking.js';
-import type { User } from '@/models/entities/User.js';
 import type { GalleryLike } from '@/models/entities/GalleryLike.js';
-import { UserEntityService } from './UserEntityService.js';
 import { GalleryPostEntityService } from './GalleryPostEntityService.js';
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class GalleryLikeEntityService {
@@ -19,6 +16,7 @@ export class GalleryLikeEntityService {
 	) {
 	}
 
+	@bindThis
 	public async pack(
 		src: GalleryLike['id'] | GalleryLike,
 		me?: any,
@@ -31,6 +29,7 @@ export class GalleryLikeEntityService {
 		};
 	}
 
+	@bindThis
 	public packMany(
 		likes: any[],
 		me: any,

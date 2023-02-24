@@ -3,7 +3,7 @@ import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, BlockingsRepository, NoteReactionsRepository, UsersRepository, NotesRepository } from '@/models/index.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import type { IRemoteUser, User } from '@/models/entities/User.js';
+import type { RemoteUser, User } from '@/models/entities/User.js';
 import type { Note } from '@/models/entities/Note.js';
 import { IdService } from '@/core/IdService.js';
 import type { NoteReaction } from '@/models/entities/NoteReaction.js';
@@ -12,12 +12,14 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { CreateNotificationService } from '@/core/CreateNotificationService.js';
 import PerUserReactionsChart from '@/core/chart/charts/per-user-reactions.js';
 import { emojiRegex } from '@/misc/emoji-regex.js';
-import { ApDeliverManagerService } from './remote/activitypub/ApDeliverManagerService.js';
-import { NoteEntityService } from './entities/NoteEntityService.js';
-import { UserEntityService } from './entities/UserEntityService.js';
-import { ApRendererService } from './remote/activitypub/ApRendererService.js';
-import { MetaService } from './MetaService.js';
-import { UtilityService } from './UtilityService.js';
+import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
+import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
+import { MetaService } from '@/core/MetaService.js';
+import { bindThis } from '@/decorators.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { UserBlockingService } from '@/core/UserBlockingService.js';
 
 const legacies: Record<string, string> = {
 	'like': '👍',
@@ -72,8 +74,9 @@ export class ReactionService {
 		private metaService: MetaService,
 		private userEntityService: UserEntityService,
 		private noteEntityService: NoteEntityService,
+		private userBlockingService: UserBlockingService,
 		private idService: IdService,
-		private globalEventServie: GlobalEventService,
+		private globalEventService: GlobalEventService,
 		private apRendererService: ApRendererService,
 		private apDeliverManagerService: ApDeliverManagerService,
 		private createNotificationService: CreateNotificationService,
@@ -81,14 +84,12 @@ export class ReactionService {
 	) {
 	}
 
-	public async create(user: { id: User['id']; host: User['host']; }, note: Note, reaction?: string) {
+	@bindThis
+	public async create(user: { id: User['id']; host: User['host']; isBot: User['isBot'] }, note: Note, reaction?: string | null) {
 		// Check blocking
 		if (note.userId !== user.id) {
-			const block = await this.blockingsRepository.findOneBy({
-				blockerId: note.userId,
-				blockeeId: user.id,
-			});
-			if (block) {
+			const blocked = await this.userBlockingService.checkBlocked(note.userId, user.id);
+			if (blocked) {
 				throw new IdentifiableError('e70412a4-7197-4726-8e74-f3e0deb92aa7');
 			}
 		}
@@ -137,7 +138,7 @@ export class ReactionService {
 		await this.notesRepository.createQueryBuilder().update()
 			.set({
 				reactions: () => sql,
-				score: () => '"score" + 1',
+				... (!user.isBot ? { score: () => '"score" + 1' } : {}),
 			})
 			.where('id = :id', { id: note.id })
 			.execute();
@@ -155,11 +156,12 @@ export class ReactionService {
 			select: ['name', 'host', 'originalUrl', 'publicUrl'],
 		});
 	
-		this.globalEventServie.publishNoteStream(note.id, 'reacted', {
+		this.globalEventService.publishNoteStream(note.id, 'reacted', {
 			reaction: decodedReaction.reaction,
 			emoji: emoji != null ? {
 				name: emoji.host ? `${emoji.name}@${emoji.host}` : `${emoji.name}@.`,
-				url: emoji.publicUrl ?? emoji.originalUrl, // || emoji.originalUrl してるのは後方互換性のため
+				// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
+				url: emoji.publicUrl || emoji.originalUrl,
 			} : null,
 			userId: user.id,
 		});
@@ -175,11 +177,11 @@ export class ReactionService {
 	
 		//#region 配信
 		if (this.userEntityService.isLocalUser(user) && !note.localOnly) {
-			const content = this.apRendererService.renderActivity(await this.apRendererService.renderLike(record, note));
+			const content = this.apRendererService.addContext(await this.apRendererService.renderLike(record, note));
 			const dm = this.apDeliverManagerService.createDeliverManager(user, content);
 			if (note.userHost !== null) {
 				const reactee = await this.usersRepository.findOneBy({ id: note.userId });
-				dm.addDirectRecipe(reactee as IRemoteUser);
+				dm.addDirectRecipe(reactee as RemoteUser);
 			}
 	
 			if (['public', 'home', 'followers'].includes(note.visibility)) {
@@ -187,7 +189,7 @@ export class ReactionService {
 			} else if (note.visibility === 'specified') {
 				const visibleUsers = await Promise.all(note.visibleUserIds.map(id => this.usersRepository.findOneBy({ id })));
 				for (const u of visibleUsers.filter(u => u && this.userEntityService.isRemoteUser(u))) {
-					dm.addDirectRecipe(u as IRemoteUser);
+					dm.addDirectRecipe(u as RemoteUser);
 				}
 			}
 	
@@ -196,7 +198,8 @@ export class ReactionService {
 		//#endregion
 	}
 
-	public async delete(user: { id: User['id']; host: User['host']; }, note: Note) {
+	@bindThis
+	public async delete(user: { id: User['id']; host: User['host']; isBot: User['isBot']; }, note: Note) {
 		// if already unreacted
 		const exist = await this.noteReactionsRepository.findOneBy({
 			noteId: note.id,
@@ -223,20 +226,20 @@ export class ReactionService {
 			.where('id = :id', { id: note.id })
 			.execute();
 	
-		this.notesRepository.decrement({ id: note.id }, 'score', 1);
+		if (!user.isBot) this.notesRepository.decrement({ id: note.id }, 'score', 1);
 	
-		this.globalEventServie.publishNoteStream(note.id, 'unreacted', {
+		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
 			reaction: this.decodeReaction(exist.reaction).reaction,
 			userId: user.id,
 		});
 	
 		//#region 配信
 		if (this.userEntityService.isLocalUser(user) && !note.localOnly) {
-			const content = this.apRendererService.renderActivity(this.apRendererService.renderUndo(await this.apRendererService.renderLike(exist, note), user));
+			const content = this.apRendererService.addContext(this.apRendererService.renderUndo(await this.apRendererService.renderLike(exist, note), user));
 			const dm = this.apDeliverManagerService.createDeliverManager(user, content);
 			if (note.userHost !== null) {
 				const reactee = await this.usersRepository.findOneBy({ id: note.userId });
-				dm.addDirectRecipe(reactee as IRemoteUser);
+				dm.addDirectRecipe(reactee as RemoteUser);
 			}
 			dm.addFollowersRecipe();
 			dm.execute();
@@ -244,11 +247,13 @@ export class ReactionService {
 		//#endregion
 	}
 	
+	@bindThis
 	public async getFallbackReaction(): Promise<string> {
 		const meta = await this.metaService.fetch();
 		return meta.useStarForReactionFallback ? '⭐' : '👍';
 	}
 
+	@bindThis
 	public convertLegacyReactions(reactions: Record<string, number>) {
 		const _reactions = {} as Record<string, number>;
 
@@ -279,6 +284,7 @@ export class ReactionService {
 		return _reactions2;
 	}
 
+	@bindThis
 	public async toDbReaction(reaction?: string | null, reacterHost?: string | null): Promise<string> {
 		if (reaction == null) return await this.getFallbackReaction();
 
@@ -311,6 +317,7 @@ export class ReactionService {
 		return await this.getFallbackReaction();
 	}
 
+	@bindThis
 	public decodeReaction(str: string): DecodedReaction {
 		const custom = str.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/);
 
@@ -332,6 +339,7 @@ export class ReactionService {
 		};
 	}
 
+	@bindThis
 	public convertLegacyReaction(reaction: string): string {
 		reaction = this.decodeReaction(reaction).reaction;
 		if (Object.keys(legacies).includes(reaction)) return legacies[reaction];

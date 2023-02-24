@@ -45,16 +45,6 @@ export class Meta {
 	@Column('boolean', {
 		default: false,
 	})
-	public disableLocalTimeline: boolean;
-
-	@Column('boolean', {
-		default: false,
-	})
-	public disableGlobalTimeline: boolean;
-
-	@Column('boolean', {
-		default: false,
-	})
 	public useStarForReactionFallback: boolean;
 
 	@Column('varchar', {
@@ -227,18 +217,6 @@ export class Meta {
 	})
 	public enableSensitiveMediaDetectionForVideos: boolean;
 
-	@Column('integer', {
-		default: 1024,
-		comment: 'Drive capacity of a local user (MB)',
-	})
-	public localDriveCapacityMb: number;
-
-	@Column('integer', {
-		default: 32,
-		comment: 'Drive capacity of a remote user (MB)',
-	})
-	public remoteDriveCapacityMb: number;
-
 	@Column('varchar', {
 		length: 128,
 		nullable: true,
@@ -300,57 +278,6 @@ export class Meta {
 		nullable: true,
 	})
 	public swPrivateKey: string | null;
-
-	@Column('boolean', {
-		default: false,
-	})
-	public enableTwitterIntegration: boolean;
-
-	@Column('varchar', {
-		length: 128,
-		nullable: true,
-	})
-	public twitterConsumerKey: string | null;
-
-	@Column('varchar', {
-		length: 128,
-		nullable: true,
-	})
-	public twitterConsumerSecret: string | null;
-
-	@Column('boolean', {
-		default: false,
-	})
-	public enableGithubIntegration: boolean;
-
-	@Column('varchar', {
-		length: 128,
-		nullable: true,
-	})
-	public githubClientId: string | null;
-
-	@Column('varchar', {
-		length: 128,
-		nullable: true,
-	})
-	public githubClientSecret: string | null;
-
-	@Column('boolean', {
-		default: false,
-	})
-	public enableDiscordIntegration: boolean;
-
-	@Column('varchar', {
-		length: 128,
-		nullable: true,
-	})
-	public discordClientId: string | null;
-
-	@Column('varchar', {
-		length: 128,
-		nullable: true,
-	})
-	public discordClientSecret: string | null;
 
 	@Column('varchar', {
 		length: 128,
@@ -476,4 +403,9 @@ export class Meta {
 		default: true,
 	})
 	public enableActiveEmailValidation: boolean;
+
+	@Column('jsonb', {
+		default: { },
+	})
+	public policies: Record<string, any>;
 }

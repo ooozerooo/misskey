@@ -1,9 +1,8 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
 import * as mfm from 'mfm-js';
 import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
-import type { Config } from '@/config.js';
 import type { Packed } from '@/misc/schema.js';
 import { nyaize } from '@/misc/nyaize.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -11,6 +10,7 @@ import type { User } from '@/models/entities/User.js';
 import type { Note } from '@/models/entities/Note.js';
 import type { NoteReaction } from '@/models/entities/NoteReaction.js';
 import type { UsersRepository, NotesRepository, FollowingsRepository, PollsRepository, PollVotesRepository, NoteReactionsRepository, ChannelsRepository, DriveFilesRepository } from '@/models/index.js';
+import { bindThis } from '@/decorators.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { CustomEmojiService } from '../CustomEmojiService.js';
 import type { ReactionService } from '../ReactionService.js';
@@ -68,6 +68,7 @@ export class NoteEntityService implements OnModuleInit {
 		this.reactionService = this.moduleRef.get('ReactionService');
 	}
 	
+	@bindThis
 	private async hideNote(packedNote: Packed<'Note'>, meId: User['id'] | null) {
 	// TODO: isVisibleForMe を使うようにしても良さそう(型違うけど)
 		let hide = false;
@@ -128,6 +129,7 @@ export class NoteEntityService implements OnModuleInit {
 		}
 	}
 
+	@bindThis
 	private async populatePoll(note: Note, meId: User['id'] | null) {
 		const poll = await this.pollsRepository.findOneByOrFail({ noteId: note.id });
 		const choices = poll.choices.map(c => ({
@@ -166,6 +168,7 @@ export class NoteEntityService implements OnModuleInit {
 		};
 	}
 
+	@bindThis
 	private async populateMyReaction(note: Note, meId: User['id'], _hint_?: {
 		myReactions: Map<Note['id'], NoteReaction | null>;
 	}) {
@@ -191,6 +194,7 @@ export class NoteEntityService implements OnModuleInit {
 		return undefined;
 	}
 
+	@bindThis
 	public async isVisibleForMe(note: Note, meId: User['id'] | null): Promise<boolean> {
 		// This code must always be synchronized with the checks in generateVisibilityQuery.
 		// visibility が specified かつ自分が指定されていなかったら非表示
@@ -244,6 +248,7 @@ export class NoteEntityService implements OnModuleInit {
 		return true;
 	}
 
+	@bindThis
 	public async pack(
 		src: Note['id'] | Note,
 		me?: { id: User['id'] } | null | undefined,
@@ -276,7 +281,9 @@ export class NoteEntityService implements OnModuleInit {
 				: await this.channelsRepository.findOneBy({ id: note.channelId })
 			: null;
 
-		const reactionEmojiNames = Object.keys(note.reactions).filter(x => x.startsWith(':')).map(x => this.reactionService.decodeReaction(x).reaction).map(x => x.replace(/:/g, ''));
+		const reactionEmojiNames = Object.keys(note.reactions)
+			.filter(x => x.startsWith(':') && x.includes('@') && !x.includes('@.')) // リモートカスタム絵文字のみ
+			.map(x => this.reactionService.decodeReaction(x).reaction.replaceAll(':', ''));
 
 		const packed: Packed<'Note'> = await awaitAll({
 			id: note.id,
@@ -293,8 +300,9 @@ export class NoteEntityService implements OnModuleInit {
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
 			reactions: this.reactionService.convertLegacyReactions(note.reactions),
+			reactionEmojis: this.customEmojiService.populateEmojis(reactionEmojiNames, host),
+			emojis: host != null ? this.customEmojiService.populateEmojis(note.emojis, host) : undefined,
 			tags: note.tags.length > 0 ? note.tags : undefined,
-			emojis: this.customEmojiService.populateEmojis(note.emojis.concat(reactionEmojiNames), host),
 			fileIds: note.fileIds,
 			files: this.driveFileEntityService.packMany(note.fileIds),
 			replyId: note.replyId,
@@ -329,12 +337,20 @@ export class NoteEntityService implements OnModuleInit {
 
 		if (packed.user.isCat && packed.text) {
 			const tokens = packed.text ? mfm.parse(packed.text) : [];
-			mfm.inspect(tokens, node => {
+			function nyaizeNode(node: mfm.MfmNode) {
+				if (node.type === 'quote') return;
 				if (node.type === 'text') {
-					// TODO: quoteなtextはskip
 					node.props.text = nyaize(node.props.text);
 				}
-			});
+				if (node.children) {
+					for (const child of node.children) {
+						nyaizeNode(child);
+					}
+				}
+			}
+			for (const node of tokens) {
+				nyaizeNode(node);
+			}
 			packed.text = mfm.toString(tokens);
 		}
 
@@ -345,6 +361,7 @@ export class NoteEntityService implements OnModuleInit {
 		return packed;
 	}
 
+	@bindThis
 	public async packMany(
 		notes: Note[],
 		me?: { id: User['id'] } | null | undefined,
@@ -380,6 +397,7 @@ export class NoteEntityService implements OnModuleInit {
 		})));
 	}
 
+	@bindThis
 	public async countSameRenotes(userId: string, renoteId: string, excludeNoteId: string | undefined): Promise<number> {
 		// 指定したユーザーの指定したノートのリノートがいくつあるか数える
 		const query = this.notesRepository.createQueryBuilder('note')

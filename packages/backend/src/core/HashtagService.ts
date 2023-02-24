@@ -4,9 +4,9 @@ import type { User } from '@/models/entities/User.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { IdService } from '@/core/IdService.js';
 import type { Hashtag } from '@/models/entities/Hashtag.js';
-import HashtagChart from '@/core/chart/charts/hashtag.js';
 import type { HashtagsRepository, UsersRepository } from '@/models/index.js';
-import { UserEntityService } from './entities/UserEntityService.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class HashtagService {
@@ -19,16 +19,17 @@ export class HashtagService {
 
 		private userEntityService: UserEntityService,
 		private idService: IdService,
-		private hashtagChart: HashtagChart,
 	) {
 	}
 
+	@bindThis
 	public async updateHashtags(user: { id: User['id']; host: User['host']; }, tags: string[]) {
 		for (const tag of tags) {
 			await this.updateHashtag(user, tag);
 		}
 	}
 
+	@bindThis
 	public async updateUsertags(user: User, tags: string[]) {
 		for (const tag of tags) {
 			await this.updateHashtag(user, tag, true, true);
@@ -39,6 +40,7 @@ export class HashtagService {
 		}
 	}
 
+	@bindThis
 	public async updateHashtag(user: { id: User['id']; host: User['host']; }, tag: string, isUserAttached = false, inc = true) {
 		tag = normalizeForSearch(tag);
 
@@ -138,10 +140,6 @@ export class HashtagService {
 					attachedRemoteUsersCount: 0,
 				} as Hashtag);
 			}
-		}
-
-		if (!isUserAttached) {
-			this.hashtagChart.update(tag, user);
 		}
 	}
 }

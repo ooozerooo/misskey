@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CoreModule } from '@/core/CoreModule.js';
+import { GlobalModule } from '@/GlobalModule.js';
 import { QueueLoggerService } from './QueueLoggerService.js';
 import { QueueProcessorService } from './QueueProcessorService.js';
 import { DbQueueProcessorsService } from './DbQueueProcessorsService.js';
@@ -29,9 +30,12 @@ import { ImportMutingProcessorService } from './processors/ImportMutingProcessor
 import { ImportUserListsProcessorService } from './processors/ImportUserListsProcessorService.js';
 import { ResyncChartsProcessorService } from './processors/ResyncChartsProcessorService.js';
 import { TickChartsProcessorService } from './processors/TickChartsProcessorService.js';
+import { AggregateRetentionProcessorService } from './processors/AggregateRetentionProcessorService.js';
+import { ExportFavoritesProcessorService } from './processors/ExportFavoritesProcessorService.js';
 
 @Module({
 	imports: [
+		GlobalModule,
 		CoreModule,
 	],
 	providers: [
@@ -44,6 +48,7 @@ import { TickChartsProcessorService } from './processors/TickChartsProcessorServ
 		DeleteDriveFilesProcessorService,
 		ExportCustomEmojisProcessorService,
 		ExportNotesProcessorService,
+		ExportFavoritesProcessorService,
 		ExportFollowingProcessorService,
 		ExportMutingProcessorService,
 		ExportBlockingProcessorService,
@@ -63,6 +68,7 @@ import { TickChartsProcessorService } from './processors/TickChartsProcessorServ
 		EndedPollNotificationProcessorService,
 		DeliverProcessorService,
 		InboxProcessorService,
+		AggregateRetentionProcessorService,
 		QueueProcessorService,
 	],
 	exports: [

@@ -1,13 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { NoteFavoritesRepository } from '@/models/index.js';
-import { awaitAll } from '@/misc/prelude/await-all.js';
-import type { Packed } from '@/misc/schema.js';
 import type { } from '@/models/entities/Blocking.js';
 import type { User } from '@/models/entities/User.js';
 import type { NoteFavorite } from '@/models/entities/NoteFavorite.js';
-import { UserEntityService } from './UserEntityService.js';
 import { NoteEntityService } from './NoteEntityService.js';
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class NoteFavoriteEntityService {
@@ -19,6 +17,7 @@ export class NoteFavoriteEntityService {
 	) {
 	}
 
+	@bindThis
 	public async pack(
 		src: NoteFavorite['id'] | NoteFavorite,
 		me?: { id: User['id'] } | null | undefined,
@@ -33,6 +32,7 @@ export class NoteFavoriteEntityService {
 		};
 	}
 
+	@bindThis
 	public packMany(
 		favorites: any[],
 		me: { id: User['id'] },

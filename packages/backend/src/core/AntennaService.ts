@@ -3,22 +3,25 @@ import Redis from 'ioredis';
 import type { Antenna } from '@/models/entities/Antenna.js';
 import type { Note } from '@/models/entities/Note.js';
 import type { User } from '@/models/entities/User.js';
+import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { PushNotificationService } from '@/core/PushNotificationService.js';
 import * as Acct from '@/misc/acct.js';
-import { Cache } from '@/misc/cache.js';
 import type { Packed } from '@/misc/schema.js';
 import { DI } from '@/di-symbols.js';
-import type { MutingsRepository, BlockingsRepository, NotesRepository, AntennaNotesRepository, AntennasRepository, UserGroupJoiningsRepository, UserListJoiningsRepository } from '@/models/index.js';
-import { UtilityService } from './UtilityService.js';
+import type { MutingsRepository, NotesRepository, AntennaNotesRepository, AntennasRepository, UserListJoiningsRepository } from '@/models/index.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { bindThis } from '@/decorators.js';
+import { StreamMessages } from '@/server/api/stream/types.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 @Injectable()
 export class AntennaService implements OnApplicationShutdown {
 	private antennasFetched: boolean;
 	private antennas: Antenna[];
-	private blockingCache: Cache<User['id'][]>;
 
 	constructor(
 		@Inject(DI.redisSubscriber)
@@ -26,9 +29,6 @@ export class AntennaService implements OnApplicationShutdown {
 
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
-
-		@Inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,
 
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
@@ -39,38 +39,45 @@ export class AntennaService implements OnApplicationShutdown {
 		@Inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
 
-		@Inject(DI.userGroupJoiningsRepository)
-		private userGroupJoiningsRepository: UserGroupJoiningsRepository,
-
 		@Inject(DI.userListJoiningsRepository)
 		private userListJoiningsRepository: UserListJoiningsRepository,
 
 		private utilityService: UtilityService,
 		private idService: IdService,
-		private globalEventServie: GlobalEventService,
+		private globalEventService: GlobalEventService,
+		private pushNotificationService: PushNotificationService,
+		private noteEntityService: NoteEntityService,
+		private antennaEntityService: AntennaEntityService,
 	) {
 		this.antennasFetched = false;
 		this.antennas = [];
-		this.blockingCache = new Cache<User['id'][]>(1000 * 60 * 5);
 
 		this.redisSubscriber.on('message', this.onRedisMessage);
 	}
 
+	@bindThis
 	public onApplicationShutdown(signal?: string | undefined) {
 		this.redisSubscriber.off('message', this.onRedisMessage);
 	}
 
+	@bindThis
 	private async onRedisMessage(_: string, data: string): Promise<void> {
 		const obj = JSON.parse(data);
 
 		if (obj.channel === 'internal') {
-			const { type, body } = obj.message;
+			const { type, body } = obj.message as StreamMessages['internal']['payload'];
 			switch (type) {
 				case 'antennaCreated':
-					this.antennas.push(body);
+					this.antennas.push({
+						...body,
+						createdAt: new Date(body.createdAt),
+					});
 					break;
 				case 'antennaUpdated':
-					this.antennas[this.antennas.findIndex(a => a.id === body.id)] = body;
+					this.antennas[this.antennas.findIndex(a => a.id === body.id)] = {
+						...body,
+						createdAt: new Date(body.createdAt),
+					};
 					break;
 				case 'antennaDeleted':
 					this.antennas = this.antennas.filter(a => a.id !== body.id);
@@ -81,6 +88,7 @@ export class AntennaService implements OnApplicationShutdown {
 		}
 	}
 
+	@bindThis
 	public async addNoteToAntenna(antenna: Antenna, note: Note, noteUser: { id: User['id']; }): Promise<void> {
 		// 通知しない設定になっているか、自分自身の投稿なら既読にする
 		const read = !antenna.notify || (antenna.userId === noteUser.id);
@@ -92,7 +100,7 @@ export class AntennaService implements OnApplicationShutdown {
 			read: read,
 		});
 	
-		this.globalEventServie.publishAntennaStream(antenna.id, 'note', note);
+		this.globalEventService.publishAntennaStream(antenna.id, 'note', note);
 	
 		if (!read) {
 			const mutings = await this.mutingsRepository.find({
@@ -122,7 +130,11 @@ export class AntennaService implements OnApplicationShutdown {
 			setTimeout(async () => {
 				const unread = await this.antennaNotesRepository.findOneBy({ antennaId: antenna.id, read: false });
 				if (unread) {
-					this.globalEventServie.publishMainStream(antenna.userId, 'unreadAntenna', antenna);
+					this.globalEventService.publishMainStream(antenna.userId, 'unreadAntenna', antenna);
+					this.pushNotificationService.pushNotification(antenna.userId, 'unreadAntennaNote', {
+						antenna: { id: antenna.id, name: antenna.name },
+						note: await this.noteEntityService.pack(note),
+					});
 				}
 			}, 2000);
 		}
@@ -130,40 +142,21 @@ export class AntennaService implements OnApplicationShutdown {
 
 	// NOTE: フォローしているユーザーのノート、リストのユーザーのノート、グループのユーザーのノート指定はパフォーマンス上の理由で無効になっている
 
-	/**
-	 * noteUserFollowers / antennaUserFollowing はどちらか一方が指定されていればよい
-	 */
-	public async checkHitAntenna(antenna: Antenna, note: (Note | Packed<'Note'>), noteUser: { id: User['id']; username: string; host: string | null; }, noteUserFollowers?: User['id'][], antennaUserFollowing?: User['id'][]): Promise<boolean> {
+	@bindThis
+	public async checkHitAntenna(antenna: Antenna, note: (Note | Packed<'Note'>), noteUser: { id: User['id']; username: string; host: string | null; }): Promise<boolean> {
 		if (note.visibility === 'specified') return false;
-	
-		// アンテナ作成者がノート作成者にブロックされていたらスキップ
-		const blockings = await this.blockingCache.fetch(noteUser.id, () => this.blockingsRepository.findBy({ blockerId: noteUser.id }).then(res => res.map(x => x.blockeeId)));
-		if (blockings.some(blocking => blocking === antenna.userId)) return false;
-	
-		if (note.visibility === 'followers') {
-			if (noteUserFollowers && !noteUserFollowers.includes(antenna.userId)) return false;
-			if (antennaUserFollowing && !antennaUserFollowing.includes(note.userId)) return false;
-		}
+		if (note.visibility === 'followers') return false;
 	
 		if (!antenna.withReplies && note.replyId != null) return false;
 	
 		if (antenna.src === 'home') {
-			if (noteUserFollowers && !noteUserFollowers.includes(antenna.userId)) return false;
-			if (antennaUserFollowing && !antennaUserFollowing.includes(note.userId)) return false;
+			// TODO
 		} else if (antenna.src === 'list') {
 			const listUsers = (await this.userListJoiningsRepository.findBy({
 				userListId: antenna.userListId!,
 			})).map(x => x.userId);
 	
 			if (!listUsers.includes(note.userId)) return false;
-		} else if (antenna.src === 'group') {
-			const joining = await this.userGroupJoiningsRepository.findOneByOrFail({ id: antenna.userGroupJoiningId! });
-	
-			const groupUsers = (await this.userGroupJoiningsRepository.findBy({
-				userGroupId: joining.userGroupId,
-			})).map(x => x.userId);
-	
-			if (!groupUsers.includes(note.userId)) return false;
 		} else if (antenna.src === 'users') {
 			const accts = antenna.users.map(x => {
 				const { username, host } = Acct.parse(x);
@@ -217,6 +210,7 @@ export class AntennaService implements OnApplicationShutdown {
 		return true;
 	}
 
+	@bindThis
 	public async getAntennas() {
 		if (!this.antennasFetched) {
 			this.antennas = await this.antennasRepository.find();

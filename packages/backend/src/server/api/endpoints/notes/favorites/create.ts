@@ -1,9 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
+import ms from 'ms';
 import type { NoteFavoritesRepository } from '@/models/index.js';
 import { IdService } from '@/core/IdService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { DI } from '@/di-symbols.js';
+import { AchievementService } from '@/core/AchievementService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -12,6 +14,11 @@ export const meta = {
 	requireCredential: true,
 
 	kind: 'write:favorites',
+
+	limit: {
+		duration: ms('1hour'),
+		max: 20,
+	},
 
 	errors: {
 		noSuchNote: {
@@ -45,6 +52,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 		private idService: IdService,
 		private getterService: GetterService,
+		private achievementService: AchievementService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Get favoritee
@@ -70,6 +78,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				noteId: note.id,
 				userId: me.id,
 			});
+
+			if (note.userHost == null && note.userId !== me.id) {
+				this.achievementService.create(note.userId, 'myNoteFavorited1');
+			}
 		});
 	}
 }

@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { MoreThan } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
 import { DI } from '@/di-symbols.js';
-import type { UsersRepository, BlockingsRepository, DriveFilesRepository, UserProfilesRepository, NotesRepository } from '@/models/index.js';
+import type { UsersRepository, BlockingsRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
 import { DriveService } from '@/core/DriveService.js';
@@ -12,6 +12,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type Bull from 'bull';
 import type { DbUserJobData } from '../types.js';
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class ExportBlockingProcessorService {
@@ -34,6 +35,7 @@ export class ExportBlockingProcessorService {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-blocking');
 	}
 
+	@bindThis
 	public async process(job: Bull.Job<DbUserJobData>, done: () => void): Promise<void> {
 		this.logger.info(`Exporting blocking of ${job.data.user.id} ...`);
 

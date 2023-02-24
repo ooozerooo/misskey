@@ -4,8 +4,8 @@ import * as util from 'node:util';
 import { Inject, Injectable } from '@nestjs/common';
 import IPCIDR from 'ip-cidr';
 import PrivateIp from 'private-ip';
-import got, * as Got from 'got';
 import chalk from 'chalk';
+import got, * as Got from 'got';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -15,6 +15,7 @@ import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 
 const pipeline = util.promisify(stream.pipeline);
+import { bindThis } from '@/decorators.js';
 
 @Injectable()
 export class DownloadService {
@@ -30,13 +31,14 @@ export class DownloadService {
 		this.logger = this.loggerService.getLogger('download');
 	}
 
+	@bindThis
 	public async downloadUrl(url: string, path: string): Promise<void> {
-		this.logger.info(`Downloading ${chalk.cyan(url)} ...`);
-	
+		this.logger.info(`Downloading ${chalk.cyan(url)} to ${chalk.cyanBright(path)} ...`);
+
 		const timeout = 30 * 1000;
 		const operationTimeout = 60 * 1000;
 		const maxSize = this.config.maxFileSize ?? 262144000;
-	
+
 		const req = got.stream(url, {
 			headers: {
 				'User-Agent': this.config.userAgent,
@@ -58,6 +60,7 @@ export class DownloadService {
 			retry: {
 				limit: 0,
 			},
+			enableUnixSockets: false,
 		}).on('response', (res: Got.Response) => {
 			if ((process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test') && !this.config.proxy && res.ip) {
 				if (this.isPrivateIp(res.ip)) {
@@ -65,7 +68,7 @@ export class DownloadService {
 					req.destroy();
 				}
 			}
-	
+
 			const contentLength = res.headers['content-length'];
 			if (contentLength != null) {
 				const size = Number(contentLength);
@@ -80,7 +83,7 @@ export class DownloadService {
 				req.destroy();
 			}
 		});
-	
+
 		try {
 			await pipeline(req, fs.createWriteStream(path));
 		} catch (e) {
@@ -90,10 +93,11 @@ export class DownloadService {
 				throw e;
 			}
 		}
-	
+
 		this.logger.succ(`Download finished: ${chalk.cyan(url)}`);
 	}
 
+	@bindThis
 	public async downloadTextFile(url: string): Promise<string> {
 		// Create temp file
 		const [path, cleanup] = await createTemp();
@@ -111,7 +115,8 @@ export class DownloadService {
 			cleanup();
 		}
 	}
-	
+
+	@bindThis
 	private isPrivateIp(ip: string): boolean {
 		for (const net of this.config.allowedPrivateNetworks ?? []) {
 			const cidr = new IPCIDR(net);
@@ -120,6 +125,6 @@ export class DownloadService {
 			}
 		}
 
-		return PrivateIp(ip);
+		return PrivateIp(ip) ?? false;
 	}
 }

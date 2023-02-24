@@ -10,7 +10,6 @@ import {
 import { packedNoteSchema } from '@/models/schema/note.js';
 import { packedUserListSchema } from '@/models/schema/user-list.js';
 import { packedAppSchema } from '@/models/schema/app.js';
-import { packedMessagingMessageSchema } from '@/models/schema/messaging-message.js';
 import { packedNotificationSchema } from '@/models/schema/notification.js';
 import { packedDriveFileSchema } from '@/models/schema/drive-file.js';
 import { packedDriveFolderSchema } from '@/models/schema/drive-folder.js';
@@ -20,7 +19,6 @@ import { packedBlockingSchema } from '@/models/schema/blocking.js';
 import { packedNoteReactionSchema } from '@/models/schema/note-reaction.js';
 import { packedHashtagSchema } from '@/models/schema/hashtag.js';
 import { packedPageSchema } from '@/models/schema/page.js';
-import { packedUserGroupSchema } from '@/models/schema/user-group.js';
 import { packedNoteFavoriteSchema } from '@/models/schema/note-favorite.js';
 import { packedChannelSchema } from '@/models/schema/channel.js';
 import { packedAntennaSchema } from '@/models/schema/antenna.js';
@@ -28,7 +26,8 @@ import { packedClipSchema } from '@/models/schema/clip.js';
 import { packedFederationInstanceSchema } from '@/models/schema/federation-instance.js';
 import { packedQueueCountSchema } from '@/models/schema/queue.js';
 import { packedGalleryPostSchema } from '@/models/schema/gallery-post.js';
-import { packedEmojiSchema } from '@/models/schema/emoji.js';
+import { packedEmojiDetailedSchema, packedEmojiSimpleSchema } from '@/models/schema/emoji.js';
+import { packedFlashSchema } from '@/models/schema/flash.js';
 
 export const refs = {
 	UserLite: packedUserLiteSchema,
@@ -40,9 +39,7 @@ export const refs = {
 	User: packedUserSchema,
 
 	UserList: packedUserListSchema,
-	UserGroup: packedUserGroupSchema,
 	App: packedAppSchema,
-	MessagingMessage: packedMessagingMessageSchema,
 	Note: packedNoteSchema,
 	NoteReaction: packedNoteReactionSchema,
 	NoteFavorite: packedNoteFavoriteSchema,
@@ -60,7 +57,9 @@ export const refs = {
 	Clip: packedClipSchema,
 	FederationInstance: packedFederationInstanceSchema,
 	GalleryPost: packedGalleryPostSchema,
-	Emoji: packedEmojiSchema,
+	EmojiSimple: packedEmojiSimpleSchema,
+	EmojiDetailed: packedEmojiDetailedSchema,
+	Flash: packedFlashSchema,
 };
 
 export type Packed<x extends keyof typeof refs> = SchemaType<typeof refs[x]>;
@@ -132,11 +131,27 @@ type NullOrUndefined<p extends Schema, T> =
 // https://stackoverflow.com/questions/54938141/typescript-convert-union-to-intersection
 // Get intersection from union 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+type PartialIntersection<T> = Partial<UnionToIntersection<T>>;
 
 // https://github.com/misskey-dev/misskey/pull/8144#discussion_r785287552
 // To get union, we use `Foo extends any ? Hoge<Foo> : never`
 type UnionSchemaType<a extends readonly any[], X extends Schema = a[number]> = X extends any ? SchemaType<X> : never;
-type ArrayUnion<T> = T extends any ? Array<T> : never; 
+type UnionObjectSchemaType<a extends readonly any[], X extends Schema = a[number]> = X extends any ? ObjectSchemaType<X> : never;
+type ArrayUnion<T> = T extends any ? Array<T> : never;
+
+type ObjectSchemaTypeDef<p extends Schema> =
+	p['ref'] extends keyof typeof refs ? Packed<p['ref']> :
+	p['properties'] extends NonNullable<Obj> ?
+		p['anyOf'] extends ReadonlyArray<Schema> ?
+			ObjType<p['properties'], NonNullable<p['required']>[number]> & UnionObjectSchemaType<p['anyOf']> & PartialIntersection<UnionObjectSchemaType<p['anyOf']>>
+			:
+			ObjType<p['properties'], NonNullable<p['required']>[number]>
+	:
+	p['anyOf'] extends ReadonlyArray<Schema> ? UnionObjectSchemaType<p['anyOf']> & PartialIntersection<UnionObjectSchemaType<p['anyOf']>> :
+	p['allOf'] extends ReadonlyArray<Schema> ? UnionToIntersection<UnionSchemaType<p['allOf']>> :
+	any
+
+type ObjectSchemaType<p extends Schema> = NullOrUndefined<p, ObjectSchemaTypeDef<p>>;
 
 export type SchemaTypeDef<p extends Schema> =
 	p['type'] extends 'null' ? null :
@@ -149,13 +164,7 @@ export type SchemaTypeDef<p extends Schema> =
 		string
 	) :
 	p['type'] extends 'boolean' ? boolean :
-	p['type'] extends 'object' ? (
-		p['ref'] extends keyof typeof refs ? Packed<p['ref']> :
-		p['properties'] extends NonNullable<Obj> ? ObjType<p['properties'], NonNullable<p['required']>[number]> :
-		p['anyOf'] extends ReadonlyArray<Schema> ? UnionSchemaType<p['anyOf']> & Partial<UnionToIntersection<UnionSchemaType<p['anyOf']>>> :
-		p['allOf'] extends ReadonlyArray<Schema> ? UnionToIntersection<UnionSchemaType<p['allOf']>> :
-		any
-	) :
+	p['type'] extends 'object' ? ObjectSchemaTypeDef<p> :
 	p['type'] extends 'array' ? (
 		p['items'] extends OfSchema ? (
 			p['items']['anyOf'] extends ReadonlyArray<Schema> ? UnionSchemaType<NonNullable<p['items']['anyOf']>>[] :
@@ -166,6 +175,7 @@ export type SchemaTypeDef<p extends Schema> =
 		p['items'] extends NonNullable<Schema> ? SchemaTypeDef<p['items']>[] :
 		any[]
 	) :
+	p['anyOf'] extends ReadonlyArray<Schema> ? UnionSchemaType<p['anyOf']> & PartialIntersection<UnionSchemaType<p['anyOf']>> :
 	p['oneOf'] extends ReadonlyArray<Schema> ? UnionSchemaType<p['oneOf']> :
 	any;
 

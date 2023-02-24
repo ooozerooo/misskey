@@ -1,10 +1,9 @@
 import { Entity, Index, JoinColumn, ManyToOne, Column, PrimaryColumn } from 'typeorm';
-import { notificationTypes } from '@/types.js';
+import { notificationTypes, obsoleteNotificationTypes } from '@/types.js';
 import { id } from '../id.js';
 import { User } from './User.js';
 import { Note } from './Note.js';
 import { FollowRequest } from './FollowRequest.js';
-import { UserGroupInvitation } from './UserGroupInvitation.js';
 import { AccessToken } from './AccessToken.js';
 
 @Entity()
@@ -55,20 +54,22 @@ export class Notification {
 	 * 通知の種類。
 	 * follow - フォローされた
 	 * mention - 投稿で自分が言及された
-	 * reply - (自分または自分がWatchしている)投稿が返信された
-	 * renote - (自分または自分がWatchしている)投稿がRenoteされた
-	 * quote - (自分または自分がWatchしている)投稿が引用Renoteされた
-	 * reaction - (自分または自分がWatchしている)投稿にリアクションされた
-	 * pollVote - (自分または自分がWatchしている)投稿のアンケートに投票された
+	 * reply - 投稿に返信された
+	 * renote - 投稿がRenoteされた
+	 * quote - 投稿が引用Renoteされた
+	 * reaction - 投稿にリアクションされた
 	 * pollEnded - 自分のアンケートもしくは自分が投票したアンケートが終了した
 	 * receiveFollowRequest - フォローリクエストされた
 	 * followRequestAccepted - 自分の送ったフォローリクエストが承認された
-	 * groupInvited - グループに招待された
+	 * achievementEarned - 実績を獲得
 	 * app - アプリ通知
 	 */
 	@Index()
 	@Column('enum', {
-		enum: notificationTypes,
+		enum: [
+			...notificationTypes,
+			...obsoleteNotificationTypes,
+		],
 		comment: 'The type of the Notification.',
 	})
 	public type: typeof notificationTypes[number];
@@ -107,18 +108,6 @@ export class Notification {
 	@JoinColumn()
 	public followRequest: FollowRequest | null;
 
-	@Column({
-		...id(),
-		nullable: true,
-	})
-	public userGroupInvitationId: UserGroupInvitation['id'] | null;
-
-	@ManyToOne(type => UserGroupInvitation, {
-		onDelete: 'CASCADE',
-	})
-	@JoinColumn()
-	public userGroupInvitation: UserGroupInvitation | null;
-
 	@Column('varchar', {
 		length: 128, nullable: true,
 	})
@@ -128,6 +117,11 @@ export class Notification {
 		nullable: true,
 	})
 	public choice: number | null;
+
+	@Column('varchar', {
+		length: 128, nullable: true,
+	})
+	public achievement: string | null;
 
 	/**
 	 * アプリ通知のbody

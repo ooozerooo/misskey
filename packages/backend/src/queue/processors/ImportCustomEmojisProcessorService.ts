@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, MoreThan, DataSource } from 'typeorm';
+import { DataSource } from 'typeorm';
 import unzipper from 'unzipper';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, DriveFilesRepository, UsersRepository } from '@/models/index.js';
@@ -10,6 +10,7 @@ import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { createTempDir } from '@/misc/create-temp.js';
 import { DriveService } from '@/core/DriveService.js';
 import { DownloadService } from '@/core/DownloadService.js';
+import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type Bull from 'bull';
 import type { DbUserImportJobData } from '../types.js';
@@ -43,6 +44,7 @@ export class ImportCustomEmojisProcessorService {
 		this.logger = this.queueLoggerService.logger.createSubLogger('import-custom-emojis');
 	}
 
+	@bindThis
 	public async process(job: Bull.Job<DbUserImportJobData>, done: () => void): Promise<void> {
 		this.logger.info('Importing custom emojis ...');
 
@@ -79,6 +81,10 @@ export class ImportCustomEmojisProcessorService {
 
 			for (const record of meta.emojis) {
 				if (!record.downloaded) continue;
+				if (!/^[a-zA-Z0-9_]+?([a-zA-Z0-9\.]+)?$/.test(record.fileName)) {
+					this.logger.error(`invalid filename: ${record.fileName}`);
+					continue;
+				}
 				const emojiInfo = record.emoji;
 				const emojiPath = outputPath + '/' + record.fileName;
 				await this.emojisRepository.delete({

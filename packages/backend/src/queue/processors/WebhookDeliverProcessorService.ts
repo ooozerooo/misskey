@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { WebhooksRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { StatusError } from '@/misc/status-error.js';
+import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type Bull from 'bull';
 import type { WebhookDeliverJobData } from '../types.js';
@@ -27,12 +27,12 @@ export class WebhookDeliverProcessorService {
 		this.logger = this.queueLoggerService.logger.createSubLogger('webhook');
 	}
 
+	@bindThis
 	public async process(job: Bull.Job<WebhookDeliverJobData>): Promise<string> {
 		try {
 			this.logger.debug(`delivering ${job.data.webhookId}`);
 	
-			const res = await this.httpRequestService.getResponse({
-				url: job.data.to,
+			const res = await this.httpRequestService.send(job.data.to, {
 				method: 'POST',
 				headers: {
 					'User-Agent': 'Misskey-Hooks',

@@ -1,12 +1,12 @@
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import * as parse5 from 'parse5';
-import { JSDOM } from 'jsdom';
+import { Window } from 'happy-dom';
 import { DI } from '@/di-symbols.js';
-import type { UsersRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
 import { intersperse } from '@/misc/prelude/array.js';
 import type { IMentionedRemoteUsers } from '@/models/entities/Note.js';
+import { bindThis } from '@/decorators.js';
 import * as TreeAdapter from '../../node_modules/parse5/dist/tree-adapters/default.js';
 import type * as mfm from 'mfm-js';
 
@@ -23,6 +23,7 @@ export class MfmService {
 	) {
 	}
 
+	@bindThis
 	public fromHtml(html: string, hashtagNames?: string[]): string {
 		// some AP servers like Pixelfed use br tags as well as newlines
 		html = html.replace(/<br\s?\/?>\r?\n/gi, '\n');
@@ -228,12 +229,13 @@ export class MfmService {
 		}
 	}
 
+	@bindThis
 	public toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = []) {
 		if (nodes == null) {
 			return null;
 		}
 	
-		const { window } = new JSDOM('');
+		const { window } = new Window();
 	
 		const doc = window.document;
 	
@@ -298,7 +300,7 @@ export class MfmService {
 	
 			hashtag: (node) => {
 				const a = doc.createElement('a');
-				a.href = `${this.config.url}/tags/${node.props.hashtag}`;
+				a.setAttribute('href', `${this.config.url}/tags/${node.props.hashtag}`);
 				a.textContent = `#${node.props.hashtag}`;
 				a.setAttribute('rel', 'tag');
 				return a;
@@ -324,7 +326,7 @@ export class MfmService {
 	
 			link: (node) => {
 				const a = doc.createElement('a');
-				a.href = node.props.url;
+				a.setAttribute('href', node.props.url);
 				appendChildren(node.children, a);
 				return a;
 			},
@@ -333,7 +335,7 @@ export class MfmService {
 				const a = doc.createElement('a');
 				const { username, host, acct } = node.props;
 				const remoteUserInfo = mentionedRemoteUsers.find(remoteUser => remoteUser.username === username && remoteUser.host === host);
-				a.href = remoteUserInfo ? (remoteUserInfo.url ? remoteUserInfo.url : remoteUserInfo.uri) : `${this.config.url}/${acct}`;
+				a.setAttribute('href', remoteUserInfo ? (remoteUserInfo.url ? remoteUserInfo.url : remoteUserInfo.uri) : `${this.config.url}/${acct}`);
 				a.className = 'u-url mention';
 				a.textContent = acct;
 				return a;
@@ -358,14 +360,14 @@ export class MfmService {
 	
 			url: (node) => {
 				const a = doc.createElement('a');
-				a.href = node.props.url;
+				a.setAttribute('href', node.props.url);
 				a.textContent = node.props.url;
 				return a;
 			},
 	
 			search: (node) => {
 				const a = doc.createElement('a');
-				a.href = `https://www.google.com/search?q=${node.props.query}`;
+				a.setAttribute('href', `https://www.google.com/search?q=${node.props.query}`);
 				a.textContent = node.props.content;
 				return a;
 			},
