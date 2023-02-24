@@ -62,8 +62,12 @@ defineExpose({
 	}
 }
 
-@media screen and (max-width: 415px) {
+@media screen and (max-width: 450px) {
 .giivymft.noGap > .notes {
+  background: var(--bg);
+ }
+
+.giivymft:not(.noGap) > .notes .qtqtichx {
   background: var(--bg);
  }
 }

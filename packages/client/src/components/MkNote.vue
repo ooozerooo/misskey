@@ -597,7 +597,7 @@ function readPromo() {
 		}
 
 		> .article {
-			padding: 14px 16px 9px;
+			padding: 14px 5px 9px;
 
 			> .avatar {
 				margin: 0 10px 8px 0;
@@ -647,4 +647,11 @@ function readPromo() {
 	text-align: center;
 	opacity: 0.7;
 }
+
+@media screen and (max-width: 415px) {
+.tkcbzcuz > .article > .main > .body > .content.collapsed > .fade {
+  background: linear-gradient(0deg,var(--bg),var(--X15));
+ }
+}
+
 </style>
