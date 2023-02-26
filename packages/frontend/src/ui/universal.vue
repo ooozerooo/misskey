@@ -342,8 +342,8 @@ $widgets-hide-threshold: 1090px;
 	grid-gap: 8px;
 	width: 100%;
 	box-sizing: border-box;
-	-webkit-backdrop-filter: var(--blur, blur(32px));
-	backdrop-filter: var(--blur, blur(32px));
+	-webkit-backdrop-filter: blur(32px);
+	backdrop-filter: blur(32px);
 	background-color: var(--header);
 	border-top: solid 0.5px var(--divider);
 }
@@ -355,7 +355,7 @@ $widgets-hide-threshold: 1090px;
 	width: 100%;
 	max-width: 60px;
 	margin: auto;
-	border-radius: 100%;
+	border-radius: 5px;
 	background: var(--panel);
 	color: var(--fg);
 

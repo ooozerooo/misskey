@@ -148,7 +148,7 @@ export default defineComponent({
 	}
 
 	> *:not(:last-child) {
-		margin-bottom: var(--margin);
+		margin-bottom: 0;
 	}
 	}
 }

@@ -463,6 +463,7 @@ function showReactions(): void {
 .replyTo {
 	opacity: 0.7;
 	padding-bottom: 0;
+	display: none;
 }
 
 .renote {
@@ -553,7 +554,6 @@ function showReactions(): void {
 	width: 58px;
 	height: 58px;
 	position: sticky !important;
-	top: calc(22px + var(--stickyTop, 0px));
 	left: 0;
 }
 
@@ -695,20 +695,23 @@ function showReactions(): void {
 		padding: 8px 16px 0 16px;
 	}
 
+	.collapsed {
+		background: linear-gradient(0deg, var(--bg), var(--X15));
+        }
+
 	.collapsedRenoteTarget {
 		padding: 0 16px 9px;
 		margin-top: 4px;
 	}
 
 	.article {
-		padding: 14px 16px 9px;
+		padding: 14px 6px 9px;
 	}
 
 	.avatar {
 		margin: 0 10px 8px 0;
 		width: 46px;
 		height: 46px;
-		top: calc(14px + var(--stickyTop, 0px));
 	}
 }
 
@@ -752,7 +755,6 @@ function showReactions(): void {
 	padding: 0 6px;
 	border: dashed 1px var(--divider);
 	border-radius: 4px;
-	background: transparent;
 	opacity: .8;
 
 	&:hover {
@@ -760,10 +762,5 @@ function showReactions(): void {
 	}
 }
 
-@media screen and (max-width: 415px) {
-.tkcbzcuz > .article > .main > .body > .content.collapsed > .fade {
-  background: linear-gradient(0deg,var(--bg),var(--X15));
- }
-}
 
 </style>

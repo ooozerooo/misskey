@@ -83,7 +83,7 @@ onMounted(() => {
 .root {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, min(380px, 100%));
-	grid-gap: 12px;
+	grid-gap: 8px;
 	place-content: center;
 }
 

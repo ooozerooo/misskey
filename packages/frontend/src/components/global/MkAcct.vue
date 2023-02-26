@@ -1,7 +1,7 @@
 <template>
 <span>
 	<span>@{{ user.username }}</span>
-	<span v-if="user.host || detail || $store.state.showFullAcct" style="opacity: 0.5;">@{{ user.host || host }}</span>
+	<span v-if="user.host || detail || $store.state.showFullAcct" style="opacity: 0.8;">@{{ user.host || host }}</span>
 </span>
 </template>
 

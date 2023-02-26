@@ -262,6 +262,7 @@ function exploreOtherServers() {
 		}
 
 		> .tl {
+			display: none;
 			position: relative;
 			background: var(--panel);
 			border-radius: var(--radius);
@@ -282,6 +283,7 @@ function exploreOtherServers() {
 	}
 
 	> .federation {
+		display: none;
 		position: fixed;
 		bottom: 16px;
 		left: 0;

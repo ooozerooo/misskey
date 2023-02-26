@@ -940,6 +940,10 @@ collapseRenotes: "Collapse renotes you've already seen"
 internalServerError: "Internal Server Error"
 internalServerErrorDescription: "The server has run into an unexpected error."
 copyErrorInfo: "Copy error details"
+joinThisServer: "Sign up on this server"
+exploreOtherServers: "Explore other servers"
+letsLookAtTimeline: "View timeline"
+disableFederationWarn: "Federation is disabled. Disabling it does not make the post private."
 _achievements:
   earnedAt: "Unlocked at"
   _types:
@@ -1616,6 +1620,8 @@ _visibility:
   followersDescription: "Make visible to your followers only"
   specified: "Direct"
   specifiedDescription: "Make visible for specified users only"
+  disableFederation: "Non-federation"
+  disableFederationDescription: "No federation to other instances"
 _postForm:
   replyPlaceholder: "Reply to this note..."
   quotePlaceholder: "Quote this note..."
@@ -1771,6 +1777,7 @@ _notification:
     pollEnded: "Polls ending"
     receiveFollowRequest: "Received follow requests"
     followRequestAccepted: "Accepted follow requests"
+    achievementEarned: "Achievement unlocked"
     app: "Notifications from linked apps"
   _actions:
     followBack: "followed you back"

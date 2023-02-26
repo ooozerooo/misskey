@@ -29,15 +29,13 @@ html
 		meta(property='og:site_name' content= instanceName || 'Misskey')
 		meta(name='viewport' content='width=device-width, initial-scale=1')
 		link(rel='icon' href= icon || '/favicon.ico')
-		link(rel='mask-icon' href='https://files.never.bid/drive/11759987-3cc5-4ef7-860c-3e0b4b75ca05' color='#a6ce58')
+		link(rel='mask-icon' href='https://files.never.bid/drive/11759987-3cc5-4ef7-860c-3e0b4b75ca05' color='#a6ce58') 
 		link(rel='apple-touch-icon' href= icon || '/apple-touch-icon.png')
 		link(rel='manifest' href='/manifest.json')
-                link(rel='search' type='application/opensearchdescription+xml' title=(title || "Misskey") href=`${url}/opensearch.xml`)
+		link(rel='search' type='application/opensearchdescription+xml' title=(title || "Misskey") href=`${url}/opensearch.xml`)
 		link(rel='prefetch' href='/client-assets/info.jpg')
-		link(rel='prefetch' href='/client-assets/info.jpg')
-		link(rel='prefetch' href='/client-assets/info.jpg')
-		link(rel='stylesheet' href='/assets/fontawesome/css/all.css')
-		link(rel='modulepreload' href=`/assets/${clientEntry.file}`)
+		link(rel='prefetch' href='/client-assets/not-found.jpg')
+		link(rel='prefetch' href='/client-assets/error.jpg')
 		//- https://github.com/misskey-dev/misskey/issues/9842
 		link(rel='stylesheet' href='/assets/tabler-icons/tabler-icons.min.css?v2.2.0')
 		link(rel='modulepreload' href=`/vite/${clientEntry.file}`)
@@ -92,4 +90,3 @@ html
 					</g>
 				</svg>
 		block content
-

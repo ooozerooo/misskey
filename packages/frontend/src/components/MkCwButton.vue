@@ -45,11 +45,12 @@ const toggle = () => {
 	&:hover {
 		background: var(--cwHoverBg);
 	}
-}
 
 	> span {
 		margin-left: 4px;
                 display: none;
+        }
+}
 
 .label {
 	margin-left: 4px;

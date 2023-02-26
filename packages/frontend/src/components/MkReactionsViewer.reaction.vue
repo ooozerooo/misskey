@@ -1,3 +1,4 @@
+
 <template>
 <button
 	ref="buttonEl"
@@ -107,10 +108,10 @@ useTooltip(buttonEl, async (showing) => {
 	border-radius: 4px;
 
 	&.canToggle {
-		background: var(--buttonBg);
+		background: var(--X2);
 
 		&:hover {
-			background: rgba(0, 0, 0, 0.1);
+			background: rgba(0, 0, 0, 0.2);
 		}
 	}
 
@@ -119,10 +120,10 @@ useTooltip(buttonEl, async (showing) => {
 	}
 
 	&.reacted {
-		background: var(--bg);
+		background: var(--X2);
 
 		&:hover {
-			background: var(--focus);
+			background: rgba(0, 0, 0, 0.2);
 		}
 
 		> .count {

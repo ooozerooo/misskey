@@ -814,9 +814,9 @@ defineExpose({
 
 .account {
 	height: 100%;
-	aspect-ratio: 1/1;
 	display: inline-flex;
 	vertical-align: bottom;
+	aspect-ratio: 1/1;
 }
 
 .avatar {
@@ -900,7 +900,7 @@ defineExpose({
 	font-weight: bold;
 	border-radius: 4px;
 	font-size: 0.9em;
-	min-width: 90px;
+	min-width: 75px;
 	box-sizing: border-box;
 	color: var(--fgOnAccent);
 	background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));

@@ -23,7 +23,7 @@
 						<MkPagination :pagination="usersPagination">
 							<template #empty>
 								<div class="_fullinfo">
-									<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
+									<img src="/client-assets/info.jpg" class="_ghost"/>
 									<div>{{ i18n.ts.noUsers }}</div>
 								</div>
 							</template>

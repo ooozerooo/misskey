@@ -2,7 +2,7 @@
 <div v-if="show" ref="el" :class="[$style.root]" :style="{ background: bg }">
 	<div :class="[$style.upper, { [$style.slim]: narrow, [$style.thin]: thin_ }]">
 		<div v-if="!thin_ && narrow && props.displayMyAvatar && $i" class="_button" :class="$style.buttonsLeft" @click="openAccountMenu">
-			<MkAvatar :class="$style.avatar" :user="$i"/>
+			<MkAvatar class="mobile_header_avatar" :class="$style.avatar" :user="$i"/>
 		</div>
 		<div v-else-if="!thin_ && narrow && !hideTitle" :class="$style.buttonsLeft"/>
 
@@ -149,8 +149,8 @@ onUnmounted(() => {
 		margin-left: auto;
 	}
 	.tabs:not(:first-child) {
-		padding-left: 16px;
-		mask-image: linear-gradient(90deg, rgba(0,0,0,0), rgb(0,0,0) 16px, rgb(0,0,0) 100%);
+		padding-left: 0;
+		mask-image: none;
 	}
 	.tabs {
 		margin-right: auto;
@@ -198,7 +198,11 @@ onUnmounted(() => {
 
 .buttonsLeft {
 	composes: buttons;
-	margin: 0 var(--margin) 0 0;
+	margin: 0;
+
+                > .mobile_header_avatar {
+                        display: none !important;
+                }
 }
 
 .buttonsRight {
@@ -208,12 +212,13 @@ onUnmounted(() => {
 
 .avatar {
 	$size: 32px;
-	display: inline-block;
+	display: none;
 	width: $size;
 	height: $size;
 	vertical-align: bottom;
 	margin: 0 8px;
 }
+
 
 .button {
 	display: flex;

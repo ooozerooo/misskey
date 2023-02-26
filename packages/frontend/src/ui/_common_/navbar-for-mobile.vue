@@ -84,8 +84,8 @@ function more() {
 			z-index: 1;
 			padding: 20px 0;
 			background: var(--X14);
-			-webkit-backdrop-filter: var(--blur, blur(8px));
-			backdrop-filter: var(--blur, blur(8px));
+			-webkit-backdrop-filter:  blur(8px);
+			backdrop-filter: blur(8px);
 
 			> .banner {
 				position: absolute;
@@ -118,8 +118,8 @@ function more() {
 			bottom: 0;
 			padding: 20px 0;
 			background: var(--X14);
-			-webkit-backdrop-filter: var(--blur, blur(8px));
-			backdrop-filter: var(--blur, blur(8px));
+			-webkit-backdrop-filter: blur(8px);
+			backdrop-filter: blur(8px);
 
 			> .post {
 				position: relative;

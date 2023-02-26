@@ -66,13 +66,23 @@ defineExpose({
 }
 
 @media screen and (max-width: 450px) {
-.giivymft.noGap > .notes {
-  background: var(--bg);
- }
+.root {
+        &.noGap {
+                > .notes {
+                        background: var(--bg);
+                }
+        }
 
-.giivymft:not(.noGap) > .notes .qtqtichx {
-  background: var(--bg);
- }
+        &:not(.noGap) {
+                > .notes {
+                        background: var(--panel);
+
+                        .note {
+                                background: var(--bg);
+                                border-radius: 0;
+                        }
+                }
+        }
 }
-
+}
 </style>
