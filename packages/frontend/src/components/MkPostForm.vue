@@ -900,7 +900,7 @@ defineExpose({
 	font-weight: bold;
 	border-radius: 4px;
 	font-size: 0.9em;
-	min-width: 75px;
+	min-width: 70px;
 	box-sizing: border-box;
 	color: var(--fgOnAccent);
 	background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
