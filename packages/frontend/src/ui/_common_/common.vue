@@ -182,6 +182,7 @@ if ($i) {
 	font-size: 14px;
 	pointer-events: none;
 	user-select: none;
+	display: none;
 
 	> span {
 		animation: dev-ticker-blink 2s infinite;

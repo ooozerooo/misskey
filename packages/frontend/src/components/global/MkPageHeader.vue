@@ -96,7 +96,7 @@ function onTabClick(): void {
 }
 
 const calcBg = () => {
-	const rawBg = metadata?.bg ?? 'var(--bg)';
+	const rawBg = 'var(--bg)';
 	const tinyBg = tinycolor(rawBg.startsWith('var(') ? getComputedStyle(document.documentElement).getPropertyValue(rawBg.slice(4, -1)) : rawBg);
 	tinyBg.setAlpha(0.85);
 	bg.value = tinyBg.toRgbString();
@@ -127,8 +127,8 @@ onUnmounted(() => {
 
 <style lang="scss" module>
 .root {
-	-webkit-backdrop-filter: var(--blur, blur(15px));
-	backdrop-filter: var(--blur, blur(15px));
+	-webkit-backdrop-filter: blur(24px);
+	backdrop-filter: blur(24px);
 	border-bottom: solid 0.5px var(--divider);
 	width: 100%;
 }

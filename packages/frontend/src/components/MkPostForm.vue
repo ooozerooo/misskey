@@ -34,7 +34,7 @@
 	<div :class="[$style.form]">
 		<MkNoteSimple v-if="reply" :class="$style.targetNote" :note="reply"/>
 		<MkNoteSimple v-if="renote" :class="$style.targetNote" :note="renote"/>
-		<div v-if="quoteId" :class="$style.withQuote"><i class="ti ti-quote"></i> {{ i18n.ts.quoteAttached }}<button @click="quoteId = null"><i class="ti ti-x"></i></button></div>
+		<div v-if="quoteId" :class="$style.withQuote"><i class="ti ti-quote"></i> {{ i18n.ts.quoteAttached }}<button :class="$style.quoteButton" @click="quoteId = null"><i class="ti ti-x"></i></button></div>
 		<div v-if="visibility === 'specified'" :class="$style.toSpecified">
 			<span style="margin-right: 8px;">{{ i18n.ts.recipient }}</span>
 			<div :class="$style.visibleUsers">
@@ -919,7 +919,7 @@ defineExpose({
 }
 
 .withQuote {
-	margin: 0 0 8px 0;
+	margin: 0 0 8px 15px;
 	color: var(--accent);
 }
 
@@ -1018,6 +1018,10 @@ defineExpose({
 	&.footerButtonActive {
 		color: var(--accent);
 	}
+}
+
+.quoteButton {
+  margin-left: 4px;
 }
 
 @container (max-width: 500px) {

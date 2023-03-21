@@ -47,6 +47,10 @@ const props = defineProps<{
 .badge {
 	height: 1.3em;
 	vertical-align: -20%;
+
+	&:hover {
+		transform: scale(2.5);
+	}
 }
 
 .name {
