@@ -65,7 +65,7 @@ defineExpose<WidgetComponentExpose>({
 	height: 60px;
 	border-radius: 8px;
 	box-sizing: border-box;
-	border: solid 3px #fff;
+	border: 0px;
 }
 
 .bodyContainer {
