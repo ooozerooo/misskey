@@ -2,7 +2,7 @@
 <div>
 	<XBanner v-for="media in mediaList.filter(media => !previewable(media))" :key="media.id" :media="media"/>
 	<div v-if="mediaList.filter(media => previewable(media)).length > 0" :class="$style.container">
-		<div ref="gallery" :class="[$style.medias, count <= 4 ? $style['n' + count] : $style.nMany]">
+		<div ref="gallery" :class="[$style.medias, count <= 9 ? $style['n' + count] : $style.nMany]">
 			<template v-for="media in mediaList.filter(media => previewable(media))">
 				<XVideo v-if="media.type.startsWith('video')" :key="media.id" :class="$style.media" :video="media"/>
 				<XImage v-else-if="media.type.startsWith('image')" :key="media.id" :class="$style.media" class="image" :data-id="media.id" :image="media" :raw="raw"/>
@@ -210,37 +210,37 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 			grid-column: 2 / 3;
 			grid-row: 2 / 3;
 		}
-    }
+	}
 
 	&.n5 {
 		aspect-ratio: 16/9;
 		grid-template-columns: repeat(3,1fr);
 		grid-template-rows: repeat(2,1fr);
 
-        > .media:nth-child(1) {
-            grid-column: 1 / 2;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(1) {
+			grid-column: 1 / 2;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(2) {
-            grid-column: 2 / 3;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(2) {
+			grid-column: 2 / 3;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(3) {
-            grid-column: 3 / 4;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(3) {
+			grid-column: 3 / 4;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(4) {
-            grid-column: 1 / 2;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(4) {
+			grid-column: 1 / 2;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(5) {
-            grid-column: 2 / 3;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(5) {
+			grid-column: 2 / 3;
+			grid-row: 2 / 3;
+		}
 	}
 
 	&.n6 {
@@ -248,35 +248,35 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 		grid-template-columns: repeat(3,1fr);
 		grid-template-rows: repeat(2,1fr);
 
-        > .media:nth-child(1) {
-            grid-column: 1 / 2;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(1) {
+			grid-column: 1 / 2;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(2) {
-            grid-column: 2 / 3;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(2) {
+			grid-column: 2 / 3;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(3) {
-            grid-column: 3 / 4;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(3) {
+			grid-column: 3 / 4;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(4) {
-            grid-column: 1 / 2;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(4) {
+			grid-column: 1 / 2;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(5) {
-            grid-column: 2 / 3;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(5) {
+			grid-column: 2 / 3;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(6) {
-            grid-column: 3 / 4;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(6) {
+			grid-column: 3 / 4;
+			grid-row: 2 / 3;
+		}
 	}
 
 	&.n7 {
@@ -284,40 +284,40 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 		grid-template-columns: repeat(3,1fr);
 		grid-template-rows: repeat(3,1fr);
 
-        > .media:nth-child(1) {
-            grid-column: 1 / 2;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(1) {
+			grid-column: 1 / 2;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(2) {
-            grid-column: 2 / 3;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(2) {
+			grid-column: 2 / 3;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(3) {
-            grid-column: 3 / 4;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(3) {
+			grid-column: 3 / 4;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(4) {
-            grid-column: 1 / 2;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(4) {
+			grid-column: 1 / 2;
+			grid-row: 2 / 3;
+		}
 
-    	> .media:nth-child(5) {
-            grid-column: 2 / 3;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(5) {
+			grid-column: 2 / 3;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(6) {
-            grid-column: 3 / 4;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(6) {
+			grid-column: 3 / 4;
+			grid-row: 2 / 3;
+		}
 
 		> .media:nth-child(7) {
-            grid-column: 1 / 2;
-            grid-row: 3 / 4;
-        }
+			grid-column: 1 / 2;
+			grid-row: 3 / 4;
+		}
 	}
 
 	&.n8 {
@@ -325,45 +325,45 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 		grid-template-columns: repeat(3,1fr);
 		grid-template-rows: repeat(3,1fr);
 
-        > .media:nth-child(1) {
-            grid-column: 1 / 2;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(1) {
+			grid-column: 1 / 2;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(2) {
-            grid-column: 2 / 3;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(2) {
+			grid-column: 2 / 3;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(3) {
-            grid-column: 3 / 4;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(3) {
+			grid-column: 3 / 4;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(4) {
-            grid-column: 1 / 2;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(4) {
+			grid-column: 1 / 2;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(5) {
-            grid-column: 2 / 3;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(5) {
+			grid-column: 2 / 3;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(6) {
-            grid-column: 3 / 4;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(6) {
+			grid-column: 3 / 4;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(7) {
-            grid-column: 1 / 2;
-            grid-row: 3 / 4;
-        }
+		> .media:nth-child(7) {
+			grid-column: 1 / 2;
+			grid-row: 3 / 4;
+		}
 
-        > .media:nth-child(8) {
-            grid-column: 2 / 3;
-            grid-row: 3 / 4;
-            }
+		> .media:nth-child(8) {
+			grid-column: 2 / 3;
+			grid-row: 3 / 4;
+			}
 	}
 
 	&.n9 {
@@ -371,50 +371,50 @@ const previewable = (file: misskey.entities.DriveFile): boolean => {
 		grid-template-columns: repeat(3,1fr);
 		grid-template-rows: repeat(3,1fr);
 
-        > .media:nth-child(1) {
-            grid-column: 1 / 2;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(1) {
+			grid-column: 1 / 2;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(2) {
-            grid-column: 2 / 3;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(2) {
+			grid-column: 2 / 3;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(3) {
-            grid-column: 3 / 4;
-            grid-row: 1 / 2;
-        }
+		> .media:nth-child(3) {
+			grid-column: 3 / 4;
+			grid-row: 1 / 2;
+		}
 
-        > .media:nth-child(4) {
-            grid-column: 1 / 2;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(4) {
+			grid-column: 1 / 2;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(5) {
-            grid-column: 2 / 3;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(5) {
+			grid-column: 2 / 3;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(6) {
-            grid-column: 3 / 4;
-            grid-row: 2 / 3;
-        }
+		> .media:nth-child(6) {
+			grid-column: 3 / 4;
+			grid-row: 2 / 3;
+		}
 
-        > .media:nth-child(7) {
-            grid-column: 1 / 2;
-            grid-row: 3 / 4;
-        }
+		> .media:nth-child(7) {
+			grid-column: 1 / 2;
+			grid-row: 3 / 4;
+		}
 
-        > .media:nth-child(8) {
-            grid-column: 2 / 3;
-            grid-row: 3 / 4;
-        }
+		> .media:nth-child(8) {
+			grid-column: 2 / 3;
+			grid-row: 3 / 4;
+		}
 
-        > .media:nth-child(9) {
-            grid-column: 3 / 4;
-            grid-row: 3 / 4;
-        }
+		> .media:nth-child(9) {
+			grid-column: 3 / 4;
+			grid-row: 3 / 4;
+		}
 	}
 
 	&.nMany {
