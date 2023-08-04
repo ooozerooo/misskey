@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -15,7 +20,7 @@ import PerUserDriveChart from '@/core/chart/charts/per-user-drive.js';
 import ApRequestChart from '@/core/chart/charts/ap-request.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
+import type * as Bull from 'bullmq';
 
 @Injectable()
 export class ResyncChartsProcessorService {
@@ -43,7 +48,7 @@ export class ResyncChartsProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<Record<string, unknown>>, done: () => void): Promise<void> {
+	public async process(): Promise<void> {
 		this.logger.info('Resync charts...');
 
 		// TODO: ユーザーごとのチャートも更新する
@@ -55,6 +60,5 @@ export class ResyncChartsProcessorService {
 		]);
 
 		this.logger.succ('All charts successfully resynced.');
-		done();
 	}
 }

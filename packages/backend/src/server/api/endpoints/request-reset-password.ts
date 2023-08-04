@@ -1,4 +1,8 @@
-import rndstr from 'rndstr';
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import ms from 'ms';
 import { IsNull } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
@@ -8,6 +12,7 @@ import { IdService } from '@/core/IdService.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { EmailService } from '@/core/EmailService.js';
+import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 
 export const meta = {
 	tags: ['reset password'],
@@ -41,7 +46,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
-		
+
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
@@ -77,7 +82,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				return;
 			}
 
-			const token = rndstr('a-z0-9', 64);
+			const token = secureRndstr(64, { chars: L_CHARS });
 
 			await this.passwordResetRequestsRepository.insert({
 				id: this.idService.genId(),

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Entity, Column, Index, OneToOne, JoinColumn, PrimaryColumn } from 'typeorm';
 import { id } from '../id.js';
 import { DriveFile } from './DriveFile.js';
@@ -74,6 +79,12 @@ export class User {
 		comment: 'The URI of the new account of the User',
 	})
 	public movedToUri: string | null;
+
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: 'When the user moved to another account',
+	})
+	public movedAt: Date | null;
 
 	@Column('simple-array', {
 		nullable: true,
@@ -226,12 +237,6 @@ export class User {
 	})
 	public followersUri: string | null;
 
-	@Column('boolean', {
-		default: false,
-		comment: 'Whether to show users replying to other users in the timeline.',
-	})
-	public showTimelineReplies: boolean;
-
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,
@@ -253,7 +258,19 @@ export type LocalUser = User & {
 	uri: null;
 }
 
+export type PartialLocalUser = Partial<User> & {
+	id: User['id'];
+	host: null;
+	uri: null;
+}
+
 export type RemoteUser = User & {
+	host: string;
+	uri: string;
+}
+
+export type PartialRemoteUser = Partial<User> & {
+	id: User['id'];
 	host: string;
 	uri: string;
 }

@@ -1,4 +1,9 @@
-import * as sanitizeHtml from 'sanitize-html';
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+import sanitizeHtml from 'sanitize-html';
 import { Inject, Injectable } from '@nestjs/common';
 import type { UsersRepository, AbuseUserReportsRepository } from '@/models/index.js';
 import { IdService } from '@/core/IdService.js';

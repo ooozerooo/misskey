@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { IsNull, MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -9,7 +14,7 @@ import { deepClone } from '@/misc/clone.js';
 import { IdService } from '@/core/IdService.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
+import type * as Bull from 'bullmq';
 
 @Injectable()
 export class AggregateRetentionProcessorService {
@@ -32,7 +37,7 @@ export class AggregateRetentionProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<Record<string, unknown>>, done: () => void): Promise<void> {
+	public async process(): Promise<void> {
 		this.logger.info('Aggregating retention...');
 
 		const now = new Date();
@@ -62,7 +67,6 @@ export class AggregateRetentionProcessorService {
 		} catch (err) {
 			if (isDuplicateKeyValueError(err)) {
 				this.logger.succ('Skip because it has already been processed by another worker.');
-				done();
 				return;
 			}
 			throw err;
@@ -88,6 +92,5 @@ export class AggregateRetentionProcessorService {
 		}
 
 		this.logger.succ('Retention aggregated.');
-		done();
 	}
 }

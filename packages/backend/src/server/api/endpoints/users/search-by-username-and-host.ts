@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import type { UsersRepository, FollowingsRepository } from '@/models/index.js';
@@ -97,7 +102,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 				users = await query
 					.orderBy('user.usernameLower', 'ASC')
-					.take(ps.limit)
+					.limit(ps.limit)
 					.getMany();
 
 				if (users.length < ps.limit) {
@@ -110,7 +115,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 					const otherUsers = await otherQuery
 						.orderBy('user.updatedAt', 'DESC')
-						.take(ps.limit - users.length)
+						.limit(ps.limit - users.length)
 						.getMany();
 
 					users = users.concat(otherUsers);
@@ -122,7 +127,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 				users = await query
 					.orderBy('user.updatedAt', 'DESC')
-					.take(ps.limit - users.length)
+					.limit(ps.limit - users.length)
 					.getMany();
 			}
 

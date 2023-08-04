@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import type { PagesRepository } from '@/models/index.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -41,7 +46,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				.andWhere('page.likedCount > 0')
 				.orderBy('page.likedCount', 'DESC');
 
-			const pages = await query.take(10).getMany();
+			const pages = await query.limit(10).getMany();
 
 			return await this.pageEntityService.packMany(pages, me);
 		});

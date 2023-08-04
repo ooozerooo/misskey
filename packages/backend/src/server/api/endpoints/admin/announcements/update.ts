@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AnnouncementsRepository } from '@/models/index.js';
@@ -25,7 +30,7 @@ export const paramDef = {
 		id: { type: 'string', format: 'misskey:id' },
 		title: { type: 'string', minLength: 1 },
 		text: { type: 'string', minLength: 1 },
-		imageUrl: { type: 'string', nullable: true, minLength: 1 },
+		imageUrl: { type: 'string', nullable: true, minLength: 0 },
 	},
 	required: ['id', 'title', 'text', 'imageUrl'],
 } as const;
@@ -46,7 +51,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				updatedAt: new Date(),
 				title: ps.title,
 				text: ps.text,
-				imageUrl: ps.imageUrl,
+				/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */
+				imageUrl: ps.imageUrl || null,
 			});
 		});
 	}

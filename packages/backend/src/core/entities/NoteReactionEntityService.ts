@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { NoteReactionsRepository } from '@/models/index.js';
@@ -17,7 +22,7 @@ export class NoteReactionEntityService implements OnModuleInit {
 	private userEntityService: UserEntityService;
 	private noteEntityService: NoteEntityService;
 	private reactionService: ReactionService;
-	
+
 	constructor(
 		private moduleRef: ModuleRef,
 

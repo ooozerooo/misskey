@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { In, IsNull } from 'typeorm';
 import { Feed } from 'feed';
@@ -38,9 +43,9 @@ export class FeedService {
 			link: `${this.config.url}/@${user.username}`,
 			name: user.name ?? user.username,
 		};
-	
+
 		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
-	
+
 		const notes = await this.notesRepository.find({
 			where: {
 				userId: user.id,
@@ -50,7 +55,7 @@ export class FeedService {
 			order: { createdAt: -1 },
 			take: 20,
 		});
-	
+
 		const feed = new Feed({
 			id: author.link,
 			title: `${author.name} (@${user.username}@${this.config.host})`,
@@ -66,13 +71,13 @@ export class FeedService {
 			author,
 			copyright: user.name ?? user.username,
 		});
-	
+
 		for (const note of notes) {
 			const files = note.fileIds.length > 0 ? await this.driveFilesRepository.findBy({
 				id: In(note.fileIds),
 			}) : [];
 			const file = files.find(file => file.type.startsWith('image/'));
-	
+
 			feed.addItem({
 				title: `New note by ${author.name}`,
 				link: `${this.config.url}/notes/${note.id}`,
@@ -82,7 +87,7 @@ export class FeedService {
 				image: file ? this.driveFileEntityService.getPublicUrl(file) ?? undefined : undefined,
 			});
 		}
-	
+
 		return feed;
 	}
 }

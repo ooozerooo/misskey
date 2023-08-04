@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import type { User } from '@/models/entities/User.js';
 import type { UserKeypairsRepository } from '@/models/index.js';
@@ -8,7 +13,7 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 
 @Injectable()
-export class UserKeypairService {
+export class UserKeypairService implements OnApplicationShutdown {
 	private cache: RedisKVCache<UserKeypair>;
 
 	constructor(
@@ -30,5 +35,15 @@ export class UserKeypairService {
 	@bindThis
 	public async getUserKeypair(userId: User['id']): Promise<UserKeypair> {
 		return await this.cache.fetch(userId);
+	}
+
+	@bindThis
+	public dispose(): void {
+		this.cache.dispose();
+	}
+
+	@bindThis
+	public onApplicationShutdown(signal?: string | undefined): void {
+		this.dispose();
 	}
 }

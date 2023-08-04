@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AccessTokensRepository } from '@/models/index.js';
@@ -26,7 +31,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.accessTokensRepository.createQueryBuilder('token')
-				.where('token.userId = :userId', { userId: me.id });
+				.where('token.userId = :userId', { userId: me.id })
+				.leftJoinAndSelect('token.app', 'app');
 
 			switch (ps.sort) {
 				case '+createdAt': query.orderBy('token.createdAt', 'DESC'); break;
@@ -40,7 +46,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			return await Promise.all(tokens.map(token => ({
 				id: token.id,
-				name: token.name,
+				name: token.name ?? token.app?.name,
 				createdAt: token.createdAt,
 				lastUsedAt: token.lastUsedAt,
 				permission: token.permission,

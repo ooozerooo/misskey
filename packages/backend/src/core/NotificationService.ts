@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { setTimeout } from 'node:timers/promises';
 import * as Redis from 'ioredis';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
@@ -46,7 +51,7 @@ export class NotificationService implements OnApplicationShutdown {
 		force = false,
 	) {
 		const latestReadNotificationId = await this.redisClient.get(`latestReadNotification:${userId}`);
-		
+
 		const latestNotificationIdsRes = await this.redisClient.xrevrange(
 			`notificationTimeline:${userId}`,
 			'+',
@@ -152,7 +157,13 @@ export class NotificationService implements OnApplicationShutdown {
 		*/
 	}
 
-	onApplicationShutdown(signal?: string | undefined): void {
+	@bindThis
+	public dispose(): void {
 		this.#shutdownController.abort();
+	}
+
+	@bindThis
+	public onApplicationShutdown(signal?: string | undefined): void {
+		this.dispose();
 	}
 }

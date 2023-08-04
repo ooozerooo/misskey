@@ -1,5 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { bindThis } from '@/decorators.js';
-import type Connection from '.';
+import type Connection from './index.js';
 
 /**
  * Stream channel

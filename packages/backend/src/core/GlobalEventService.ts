@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import type { User } from '@/models/entities/User.js';
@@ -20,7 +25,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
-import { Role } from '@/models';
+import { Role } from '@/models/index.js';
 
 @Injectable()
 export class GlobalEventService {

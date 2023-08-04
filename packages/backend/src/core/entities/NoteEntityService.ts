@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
 import * as mfm from 'mfm-js';
@@ -24,7 +29,7 @@ export class NoteEntityService implements OnModuleInit {
 	private driveFileEntityService: DriveFileEntityService;
 	private customEmojiService: CustomEmojiService;
 	private reactionService: ReactionService;
-	
+
 	constructor(
 		private moduleRef: ModuleRef,
 
@@ -68,7 +73,7 @@ export class NoteEntityService implements OnModuleInit {
 		this.customEmojiService = this.moduleRef.get('CustomEmojiService');
 		this.reactionService = this.moduleRef.get('ReactionService');
 	}
-	
+
 	@bindThis
 	private async hideNote(packedNote: Packed<'Note'>, meId: User['id'] | null) {
 	// TODO: isVisibleForMe を使うようにしても良さそう(型違うけど)
@@ -106,16 +111,14 @@ export class NoteEntityService implements OnModuleInit {
 				hide = false;
 			} else {
 			// フォロワーかどうか
-				const following = await this.followingsRepository.findOneBy({
-					followeeId: packedNote.userId,
-					followerId: meId,
+				const isFollowing = await this.followingsRepository.exist({
+					where: {
+						followeeId: packedNote.userId,
+						followerId: meId,
+					},
 				});
 
-				if (following == null) {
-					hide = true;
-				} else {
-					hide = false;
-				}
+				hide = !isFollowing;
 			}
 		}
 
@@ -335,6 +338,7 @@ export class NoteEntityService implements OnModuleInit {
 			channel: channel ? {
 				id: channel.id,
 				name: channel.name,
+				color: channel.color,
 			} : undefined,
 			mentions: note.mentions.length > 0 ? note.mentions : undefined,
 			uri: note.uri ?? undefined,
@@ -456,12 +460,12 @@ export class NoteEntityService implements OnModuleInit {
 		const query = this.notesRepository.createQueryBuilder('note')
 			.where('note.userId = :userId', { userId })
 			.andWhere('note.renoteId = :renoteId', { renoteId });
-	
+
 		// 指定した投稿を除く
 		if (excludeNoteId) {
 			query.andWhere('note.id != :excludeNoteId', { excludeNoteId });
 		}
-	
+
 		return await query.getCount();
-	}	
+	}
 }

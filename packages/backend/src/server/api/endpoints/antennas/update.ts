@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AntennasRepository, UserListsRepository } from '@/models/index.js';
@@ -10,6 +15,8 @@ export const meta = {
 	tags: ['antennas'],
 
 	requireCredential: true,
+
+	prohibitMoved: true,
 
 	kind: 'write:account',
 
@@ -71,7 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 		@Inject(DI.userListsRepository)
 		private userListsRepository: UserListsRepository,
-		
+
 		private antennaEntityService: AntennaEntityService,
 		private globalEventService: GlobalEventService,
 	) {
@@ -110,6 +117,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				withReplies: ps.withReplies,
 				withFile: ps.withFile,
 				notify: ps.notify,
+				isActive: true,
+				lastUsedAt: new Date(),
 			});
 
 			this.globalEventService.publishInternalEvent('antennaUpdated', await this.antennasRepository.findOneByOrFail({ id: antenna.id }));

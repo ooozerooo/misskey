@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -9,10 +14,10 @@ import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { UserMutingService } from '@/core/UserMutingService.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
-import type { DbUserImportJobData } from '../types.js';
 import { bindThis } from '@/decorators.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
+import type * as Bull from 'bullmq';
+import type { DbUserImportJobData } from '../types.js';
 
 @Injectable()
 export class ImportMutingProcessorService {
@@ -38,12 +43,11 @@ export class ImportMutingProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserImportJobData>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<DbUserImportJobData>): Promise<void> {
 		this.logger.info(`Importing muting of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			done();
 			return;
 		}
 
@@ -51,7 +55,6 @@ export class ImportMutingProcessorService {
 			id: job.data.fileId,
 		});
 		if (file == null) {
-			done();
 			return;
 		}
 
@@ -83,7 +86,7 @@ export class ImportMutingProcessorService {
 				}
 
 				if (target == null) {
-					throw `cannot resolve user: @${username}@${host}`;
+					throw new Error(`cannot resolve user: @${username}@${host}`);
 				}
 
 				// skip myself
@@ -98,6 +101,5 @@ export class ImportMutingProcessorService {
 		}
 
 		this.logger.succ('Imported');
-		done();
 	}
 }

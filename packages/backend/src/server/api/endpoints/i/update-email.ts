@@ -1,5 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
-import rndstr from 'rndstr';
 import ms from 'ms';
 import bcrypt from 'bcryptjs';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -9,6 +13,7 @@ import { EmailService } from '@/core/EmailService.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -94,7 +99,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			this.globalEventService.publishMainStream(me.id, 'meUpdated', iObj);
 
 			if (ps.email != null) {
-				const code = rndstr('a-z0-9', 16);
+				const code = secureRndstr(16, { chars: L_CHARS });
 
 				await this.userProfilesRepository.update(me.id, {
 					emailVerifyCode: code,

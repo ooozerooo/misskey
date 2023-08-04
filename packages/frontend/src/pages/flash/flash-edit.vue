@@ -1,7 +1,12 @@
+<!--
+SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="700">
+	<MkSpacer :contentMax="700">
 		<div class="_gaps">
 			<MkInput v-model="title">
 				<template #label>{{ i18n.ts._play.title }}</template>
@@ -33,7 +38,7 @@ import MkTextarea from '@/components/MkTextarea.vue';
 import MkInput from '@/components/MkInput.vue';
 import { useRouter } from '@/router';
 
-const PRESET_DEFAULT = `/// @ 0.13.1
+const PRESET_DEFAULT = `/// @ 0.15.0
 
 var name = ""
 
@@ -51,7 +56,7 @@ Ui:render([
 ])
 `;
 
-const PRESET_OMIKUJI = `/// @ 0.13.1
+const PRESET_OMIKUJI = `/// @ 0.15.0
 // ユーザーごとに日替わりのおみくじのプリセット
 
 // 選択肢
@@ -94,7 +99,7 @@ Ui:render([
 ])
 `;
 
-const PRESET_SHUFFLE = `/// @ 0.13.1
+const PRESET_SHUFFLE = `/// @ 0.15.0
 // 巻き戻し可能な文字シャッフルのプリセット
 
 let string = "ペペロンチーノ"
@@ -173,7 +178,7 @@ var cursor = 0
 do()
 `;
 
-const PRESET_QUIZ = `/// @ 0.13.1
+const PRESET_QUIZ = `/// @ 0.15.0
 let title = '地理クイズ'
 
 let qas = [{
@@ -286,7 +291,7 @@ qaEls.push(Ui:C:container({
 Ui:render(qaEls)
 `;
 
-const PRESET_TIMELINE = `/// @ 0.13.1
+const PRESET_TIMELINE = `/// @ 0.15.0
 // APIリクエストを行いローカルタイムラインを表示するプリセット
 
 @fetch() {
@@ -305,6 +310,11 @@ const PRESET_TIMELINE = `/// @ 0.13.1
 	// それぞれのノートごとにUI要素作成
 	let noteEls = []
 	each (let note, notes) {
+		// 表示名を設定していないアカウントはidを表示
+		let userName = if Core:type(note.user.name) == "str" note.user.name else note.user.username
+		// リノートもしくはメディア・投票のみで本文が無いノートに代替表示文を設定
+		let noteText = if Core:type(note.text) == "str" note.text else "（リノートもしくはメディア・投票のみのノート）"
+
 		let el = Ui:C:container({
 			bgColor: "#444"
 			fgColor: "#fff"
@@ -312,11 +322,11 @@ const PRESET_TIMELINE = `/// @ 0.13.1
 			rounded: true
 			children: [
 				Ui:C:mfm({
-					text: note.user.name
+					text: userName
 					bold: true
 				})
 				Ui:C:mfm({
-					text: note.text
+					text: noteText
 				})
 			]
 		})
@@ -437,7 +447,3 @@ definePageMetadata(computed(() => flash ? {
 	title: i18n.ts._play.new,
 }));
 </script>
-
-<style lang="scss" scoped>
-
-</style>

@@ -1,21 +1,25 @@
+<!--
+SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs"/></template>
 	<div>
-		<Transition name="fade" mode="out-in">
-			<div v-if="user">
-				<XHome v-if="tab === 'home'" :user="user"/>
-				<XTimeline v-else-if="tab === 'notes'" :user="user" />
-				<XActivity v-else-if="tab === 'activity'" :user="user"/>
-				<XAchievements v-else-if="tab === 'achievements'" :user="user"/>
-				<XReactions v-else-if="tab === 'reactions'" :user="user"/>
-				<XClips v-else-if="tab === 'clips'" :user="user"/>
-				<XPages v-else-if="tab === 'pages'" :user="user"/>
-				<XGallery v-else-if="tab === 'gallery'" :user="user"/>
-			</div>
-			<MkError v-else-if="error" @retry="fetch()"/>
-			<MkLoading v-else/>
-		</Transition>
+		<div v-if="user">
+			<XHome v-if="tab === 'home'" :user="user"/>
+			<XTimeline v-else-if="tab === 'notes'" :user="user"/>
+			<XActivity v-else-if="tab === 'activity'" :user="user"/>
+			<XAchievements v-else-if="tab === 'achievements'" :user="user"/>
+			<XReactions v-else-if="tab === 'reactions'" :user="user"/>
+			<XClips v-else-if="tab === 'clips'" :user="user"/>
+			<XLists v-else-if="tab === 'lists'" :user="user"/>
+			<XPages v-else-if="tab === 'pages'" :user="user"/>
+			<XGallery v-else-if="tab === 'gallery'" :user="user"/>
+		</div>
+		<MkError v-else-if="error" @retry="fetchUser()"/>
+		<MkLoading v-else/>
 	</div>
 </MkStickyContainer>
 </template>
@@ -36,6 +40,7 @@ const XActivity = defineAsyncComponent(() => import('./activity.vue'));
 const XAchievements = defineAsyncComponent(() => import('./achievements.vue'));
 const XReactions = defineAsyncComponent(() => import('./reactions.vue'));
 const XClips = defineAsyncComponent(() => import('./clips.vue'));
+const XLists = defineAsyncComponent(() => import('./lists.vue'));
 const XPages = defineAsyncComponent(() => import('./pages.vue'));
 const XGallery = defineAsyncComponent(() => import('./gallery.vue'));
 
@@ -95,6 +100,10 @@ const headerTabs = $computed(() => user ? [{
 	title: i18n.ts.clips,
 	icon: 'ti ti-paperclip',
 }, {
+	key: 'lists',
+	title: i18n.ts.lists,
+	icon: 'ti ti-list',
+}, {
 	key: 'pages',
 	title: i18n.ts.pages,
 	icon: 'ti ti-news',
@@ -117,14 +126,3 @@ definePageMetadata(computed(() => user ? {
 	bg: 'var(--bg)',
 } : null));
 </script>
-
-<style lang="scss" scoped>
-.fade-enter-active,
-.fade-leave-active {
-	transition: opacity 0.125s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-	opacity: 0;
-}
-</style>

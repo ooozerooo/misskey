@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import type { DriveFilesRepository } from '@/models/index.js';
@@ -14,6 +19,8 @@ export const meta = {
 	tags: ['drive'],
 
 	requireCredential: true,
+
+	prohibitMoved: true,
 
 	limit: {
 		duration: ms('1hour'),

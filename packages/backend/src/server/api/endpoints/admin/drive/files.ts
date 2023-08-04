@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import type { DriveFilesRepository } from '@/models/index.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -76,7 +81,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				}
 			}
 
-			const files = await query.take(ps.limit).getMany();
+			const files = await query.limit(ps.limit).getMany();
 
 			return await this.driveFileEntityService.packMany(files, { detail: true, withUser: true, self: true });
 		});

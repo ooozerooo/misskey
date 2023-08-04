@@ -1,3 +1,7 @@
+<!--
+SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
 
 <template>
 <button
@@ -7,7 +11,7 @@
 	:class="[$style.root, { [$style.reacted]: note.myReaction == reaction, [$style.canToggle]: canToggle, [$style.large]: defaultStore.state.largeNoteReactions }]"
 	@click="toggleReaction()"
 >
-	<MkReactionIcon :class="$style.icon" :reaction="reaction" :emoji-url="note.reactionEmojis[reaction.substr(1, reaction.length - 2)]"/>
+	<MkReactionIcon :class="$style.icon" :reaction="reaction" :emojiUrl="note.reactionEmojis[reaction.substring(1, reaction.length - 1)]"/>
 	<span :class="$style.count">{{ count }}</span>
 </button>
 </template>
@@ -23,6 +27,7 @@ import { $i } from '@/account';
 import MkReactionEffect from '@/components/MkReactionEffect.vue';
 import { claimAchievement } from '@/scripts/achievements';
 import { defaultStore } from '@/store';
+import { i18n } from '@/i18n';
 
 const props = defineProps<{
 	reaction: string;
@@ -35,11 +40,19 @@ const buttonEl = shallowRef<HTMLElement>();
 
 const canToggle = computed(() => !props.reaction.match(/@\w/) && $i);
 
-const toggleReaction = () => {
+async function toggleReaction() {
 	if (!canToggle.value) return;
+
+	// TODO: その絵文字を使う権限があるかどうか確認
 
 	const oldReaction = props.note.myReaction;
 	if (oldReaction) {
+		const confirm = await os.confirm({
+			type: 'warning',
+			text: oldReaction !== props.reaction ? i18n.ts.changeReactionConfirm : i18n.ts.cancelReactionConfirm,
+		});
+		if (confirm.canceled) return;
+
 		os.api('notes/reactions/delete', {
 			noteId: props.note.id,
 		}).then(() => {
@@ -59,9 +72,9 @@ const toggleReaction = () => {
 			claimAchievement('reactWithoutRead');
 		}
 	}
-};
+}
 
-const anime = () => {
+function anime() {
 	if (document.hidden) return;
 	if (!defaultStore.state.animation) return;
 
@@ -69,7 +82,7 @@ const anime = () => {
 	const x = rect.left + 16;
 	const y = rect.top + (buttonEl.value.offsetHeight / 2);
 	os.popup(MkReactionEffect, { reaction: props.reaction, x, y }, {}, 'end');
-};
+}
 
 watch(() => props.count, (newCount, oldCount) => {
 	if (oldCount < newCount) anime();

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import * as fs from 'node:fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { In, MoreThan, Not } from 'typeorm';
@@ -10,10 +15,10 @@ import { DriveService } from '@/core/DriveService.js';
 import { createTemp } from '@/misc/create-temp.js';
 import type { Following } from '@/models/entities/Following.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
-import type { DbExportFollowingData } from '../types.js';
 import { bindThis } from '@/decorators.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
+import type * as Bull from 'bullmq';
+import type { DbExportFollowingData } from '../types.js';
 
 @Injectable()
 export class ExportFollowingProcessorService {
@@ -40,12 +45,11 @@ export class ExportFollowingProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbExportFollowingData>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<DbExportFollowingData>): Promise<void> {
 		this.logger.info(`Exporting following of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			done();
 			return;
 		}
 
@@ -80,7 +84,7 @@ export class ExportFollowingProcessorService {
 					break;
 				}
 
-				cursor = followings[followings.length - 1].id;
+				cursor = followings.at(-1)?.id ?? null;
 
 				for (const following of followings) {
 					const u = await this.usersRepository.findOneBy({ id: following.followeeId });
@@ -116,7 +120,5 @@ export class ExportFollowingProcessorService {
 		} finally {
 			cleanup();
 		}
-
-		done();
 	}
 }

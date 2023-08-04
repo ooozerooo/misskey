@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import type { DriveFilesRepository } from '@/models/index.js';
@@ -18,6 +23,8 @@ export const meta = {
 	description: 'Request the server to download a new drive file from the specified URL.',
 
 	requireCredential: true,
+
+	prohibitMoved: true,
 
 	kind: 'write:drive',
 } as const;

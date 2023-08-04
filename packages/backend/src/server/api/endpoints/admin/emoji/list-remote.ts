@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { EmojisRepository } from '@/models/index.js';
@@ -98,7 +103,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			const emojis = await q
 				.orderBy('emoji.id', 'DESC')
-				.take(ps.limit)
+				.limit(ps.limit)
 				.getMany();
 
 			return this.emojiEntityService.packDetailedMany(emojis);

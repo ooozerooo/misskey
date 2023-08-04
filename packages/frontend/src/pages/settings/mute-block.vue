@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <div class="_gaps_m">
 	<MkTab v-model="tab">
@@ -10,7 +15,7 @@
 		<MkPagination :pagination="renoteMutingPagination">
 			<template #empty>
 				<div class="_fullinfo">
-					<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
+					<img :src="infoImageUrl" class="_ghost"/>
 					<div>{{ i18n.ts.noUsers }}</div>
 				</div>
 			</template>
@@ -38,7 +43,7 @@
 		<MkPagination :pagination="mutingPagination">
 			<template #empty>
 				<div class="_fullinfo">
-					<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
+					<img :src="infoImageUrl" class="_ghost"/>
 					<div>{{ i18n.ts.noUsers }}</div>
 				</div>
 			</template>
@@ -55,7 +60,7 @@
 						</div>
 						<div v-if="expandedMuteItems.includes(item.id)" :class="$style.userItemSub">
 							<div>Muted at: <MkTime :time="item.createdAt" mode="detail"/></div>
-							<div v-if="item.expiresAt">Period: {{ item.expiresAt.toLocaleString() }}</div>
+							<div v-if="item.expiresAt">Period: {{ new Date(item.expiresAt).toLocaleString() }}</div>
 							<div v-else>Period: {{ i18n.ts.indefinitely }}</div>
 						</div>
 					</div>
@@ -68,7 +73,7 @@
 		<MkPagination :pagination="blockingPagination">
 			<template #empty>
 				<div class="_fullinfo">
-					<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
+					<img :src="infoImageUrl" class="_ghost"/>
 					<div>{{ i18n.ts.noUsers }}</div>
 				</div>
 			</template>
@@ -85,7 +90,7 @@
 						</div>
 						<div v-if="expandedBlockItems.includes(item.id)" :class="$style.userItemSub">
 							<div>Blocked at: <MkTime :time="item.createdAt" mode="detail"/></div>
-							<div v-if="item.expiresAt">Period: {{ item.expiresAt.toLocaleString() }}</div>
+							<div v-if="item.expiresAt">Period: {{ new Date(item.expiresAt).toLocaleString() }}</div>
 							<div v-else>Period: {{ i18n.ts.indefinitely }}</div>
 						</div>
 					</div>
@@ -107,6 +112,7 @@ import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import * as os from '@/os';
+import { infoImageUrl } from '@/instance';
 
 let tab = $ref('renoteMute');
 

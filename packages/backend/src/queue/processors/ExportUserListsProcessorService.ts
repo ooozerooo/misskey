@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import * as fs from 'node:fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
@@ -9,10 +14,10 @@ import type Logger from '@/logger.js';
 import { DriveService } from '@/core/DriveService.js';
 import { createTemp } from '@/misc/create-temp.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
-import type { DbJobDataWithUser } from '../types.js';
 import { bindThis } from '@/decorators.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
+import type * as Bull from 'bullmq';
+import type { DbJobDataWithUser } from '../types.js';
 
 @Injectable()
 export class ExportUserListsProcessorService {
@@ -39,12 +44,11 @@ export class ExportUserListsProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbJobDataWithUser>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
 		this.logger.info(`Exporting user lists of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			done();
 			return;
 		}
 
@@ -92,7 +96,5 @@ export class ExportUserListsProcessorService {
 		} finally {
 			cleanup();
 		}
-
-		done();
 	}
 }

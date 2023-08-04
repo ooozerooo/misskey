@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 import { id } from '../id.js';
 
@@ -150,6 +155,11 @@ export class Role {
 		default: false,
 	})
 	public isAdministrator: boolean;
+
+	@Column('boolean', {
+		default: false,
+	})
+	public isExplorable: boolean;
 
 	@Column('boolean', {
 		default: false,

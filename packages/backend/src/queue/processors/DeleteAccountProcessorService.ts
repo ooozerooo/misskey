@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
@@ -8,10 +13,11 @@ import { DriveService } from '@/core/DriveService.js';
 import type { DriveFile } from '@/models/entities/DriveFile.js';
 import type { Note } from '@/models/entities/Note.js';
 import { EmailService } from '@/core/EmailService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
-import type { DbUserDeleteJobData } from '../types.js';
 import { bindThis } from '@/decorators.js';
+import { SearchService } from '@/core/SearchService.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
+import type * as Bull from 'bullmq';
+import type { DbUserDeleteJobData } from '../types.js';
 
 @Injectable()
 export class DeleteAccountProcessorService {
@@ -36,6 +42,7 @@ export class DeleteAccountProcessorService {
 		private driveService: DriveService,
 		private emailService: EmailService,
 		private queueLoggerService: QueueLoggerService,
+		private searchService: SearchService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('delete-account');
 	}
@@ -68,9 +75,13 @@ export class DeleteAccountProcessorService {
 					break;
 				}
 
-				cursor = notes[notes.length - 1].id;
+				cursor = notes.at(-1)?.id ?? null;
 
 				await this.notesRepository.delete(notes.map(note => note.id));
+
+				for (const note of notes) {
+					await this.searchService.unindexNote(note);
+				}
 			}
 
 			this.logger.succ('All of notes deleted');
@@ -95,7 +106,7 @@ export class DeleteAccountProcessorService {
 					break;
 				}
 
-				cursor = files[files.length - 1].id;
+				cursor = files.at(-1)?.id ?? null;
 
 				for (const file of files) {
 					await this.driveService.deleteFileSync(file);

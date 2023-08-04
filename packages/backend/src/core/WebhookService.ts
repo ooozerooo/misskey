@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import type { WebhooksRepository } from '@/models/index.js';
@@ -31,7 +36,7 @@ export class WebhookService implements OnApplicationShutdown {
 			});
 			this.webhooksFetched = true;
 		}
-	
+
 		return this.webhooks;
 	}
 
@@ -81,7 +86,12 @@ export class WebhookService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public onApplicationShutdown(signal?: string | undefined) {
+	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
+	}
+
+	@bindThis
+	public onApplicationShutdown(signal?: string | undefined): void {
+		this.dispose();
 	}
 }

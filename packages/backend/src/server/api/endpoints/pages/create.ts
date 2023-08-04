@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import type { DriveFilesRepository, PagesRepository } from '@/models/index.js';
@@ -12,6 +17,8 @@ export const meta = {
 	tags: ['pages'],
 
 	requireCredential: true,
+
+	prohibitMoved: true,
 
 	kind: 'write:pages',
 

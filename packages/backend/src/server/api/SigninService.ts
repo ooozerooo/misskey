@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { SigninsRepository } from '@/models/index.js';
@@ -36,7 +41,7 @@ export class SigninService {
 				headers: request.headers as any,
 				success: true,
 			}).then(x => this.signinsRepository.findOneByOrFail(x.identifiers[0]));
-	
+
 			// Publish signin event
 			this.globalEventService.publishMainStream(user.id, 'signin', await this.signinEntityService.pack(record));
 		});

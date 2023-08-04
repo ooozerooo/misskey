@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { URL } from 'node:url';
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -62,7 +67,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
-				if (new URL(ps.inbox).protocol !== 'https:') throw 'https only';
+				if (new URL(ps.inbox).protocol !== 'https:') throw new Error('https only');
 			} catch {
 				throw new ApiError(meta.errors.invalidUrl);
 			}

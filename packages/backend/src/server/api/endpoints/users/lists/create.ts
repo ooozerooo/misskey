@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import type { UserListsRepository } from '@/models/index.js';
 import { IdService } from '@/core/IdService.js';
@@ -12,6 +17,8 @@ export const meta = {
 	tags: ['lists'],
 
 	requireCredential: true,
+
+	prohibitMoved: true,
 
 	kind: 'write:account',
 
@@ -58,7 +65,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			if (currentCount > (await this.roleService.getUserPolicies(me.id)).userListLimit) {
 				throw new ApiError(meta.errors.tooManyUserLists);
 			}
-	
+
 			const userList = await this.userListsRepository.insert({
 				id: this.idService.genId(),
 				createdAt: new Date(),

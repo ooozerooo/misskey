@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typeorm';
 import { id } from '../id.js';
 import { User } from './User.js';
@@ -63,6 +68,18 @@ export class Channel {
 		array: true, length: 128, default: '{}',
 	})
 	public pinnedNoteIds: string[];
+
+	@Column('varchar', {
+		length: 16,
+		default: '#86b300',
+	})
+	public color: string;
+
+	@Index()
+	@Column('boolean', {
+		default: false,
+	})
+	public isArchived: boolean;
 
 	@Index()
 	@Column('integer', {

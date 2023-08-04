@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as Redis from 'ioredis';
@@ -34,7 +39,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private redisClient: Redis.Redis,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (process.env.NODE_ENV !== 'test') throw 'NODE_ENV is not a test';
+			if (process.env.NODE_ENV !== 'test') throw new Error('NODE_ENV is not a test');
 
 			await redisClient.flushdb();
 			await resetDb(this.db);

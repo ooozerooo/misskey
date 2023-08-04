@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typeorm';
 import { id } from '../id.js';
 import { User } from './User.js';
@@ -18,6 +23,12 @@ export class UserList {
 		comment: 'The owner ID.',
 	})
 	public userId: User['id'];
+
+	@Index()
+	@Column('boolean', {
+		default: false,
+	})
+	public isPublic: boolean;
 
 	@ManyToOne(type => User, {
 		onDelete: 'CASCADE',

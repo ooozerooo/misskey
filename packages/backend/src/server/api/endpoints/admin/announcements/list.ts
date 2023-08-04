@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import type { AnnouncementsRepository, AnnouncementReadsRepository } from '@/models/index.js';
 import type { Announcement } from '@/models/entities/Announcement.js';
@@ -80,7 +85,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.announcementsRepository.createQueryBuilder('announcement'), ps.sinceId, ps.untilId);
 
-			const announcements = await query.take(ps.limit).getMany();
+			const announcements = await query.limit(ps.limit).getMany();
 
 			const reads = new Map<Announcement, number>();
 

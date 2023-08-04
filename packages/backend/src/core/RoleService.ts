@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { In } from 'typeorm';
@@ -13,7 +18,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { StreamMessages } from '@/server/api/stream/types.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
-import type { Packed } from '@/misc/json-schema';
+import type { Packed } from '@/misc/json-schema.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 export type RolePolicies = {
@@ -21,10 +26,14 @@ export type RolePolicies = {
 	ltlAvailable: boolean;
 	canPublicNote: boolean;
 	canInvite: boolean;
+	inviteLimit: number;
+	inviteLimitCycle: number;
+	inviteExpirationTime: number;
 	canManageCustomEmojis: boolean;
 	canSearchNotes: boolean;
 	canHideAds: boolean;
 	driveCapacityMb: number;
+	alwaysMarkNsfw: boolean;
 	pinLimit: number;
 	antennaLimit: number;
 	wordMuteLimit: number;
@@ -41,10 +50,14 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	ltlAvailable: true,
 	canPublicNote: true,
 	canInvite: false,
+	inviteLimit: 0,
+	inviteLimitCycle: 60 * 24 * 7,
+	inviteExpirationTime: 0,
 	canManageCustomEmojis: false,
 	canSearchNotes: false,
 	canHideAds: false,
 	driveCapacityMb: 100,
+	alwaysMarkNsfw: false,
 	pinLimit: 5,
 	antennaLimit: 5,
 	wordMuteLimit: 200,
@@ -212,14 +225,19 @@ export class RoleService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async getUserRoles(userId: User['id']) {
+	public async getUserAssigns(userId: User['id']) {
 		const now = Date.now();
 		let assigns = await this.roleAssignmentByUserIdCache.fetch(userId, () => this.roleAssignmentsRepository.findBy({ userId }));
 		// 期限切れのロールを除外
 		assigns = assigns.filter(a => a.expiresAt == null || (a.expiresAt.getTime() > now));
-		const assignedRoleIds = assigns.map(x => x.roleId);
+		return assigns;
+	}
+
+	@bindThis
+	public async getUserRoles(userId: User['id']) {
 		const roles = await this.rolesCache.fetch(() => this.rolesRepository.findBy({}));
-		const assignedRoles = roles.filter(r => assignedRoleIds.includes(r.id));
+		const assigns = await this.getUserAssigns(userId);
+		const assignedRoles = roles.filter(r => assigns.map(x => x.roleId).includes(r.id));
 		const user = roles.some(r => r.target === 'conditional') ? await this.cacheService.findUserById(userId) : null;
 		const matchedCondRoles = roles.filter(r => r.target === 'conditional' && this.evalCond(user!, r.condFormula));
 		return [...assignedRoles, ...matchedCondRoles];
@@ -275,10 +293,14 @@ export class RoleService implements OnApplicationShutdown {
 			ltlAvailable: calc('ltlAvailable', vs => vs.some(v => v === true)),
 			canPublicNote: calc('canPublicNote', vs => vs.some(v => v === true)),
 			canInvite: calc('canInvite', vs => vs.some(v => v === true)),
+			inviteLimit: calc('inviteLimit', vs => Math.max(...vs)),
+			inviteLimitCycle: calc('inviteLimitCycle', vs => Math.max(...vs)),
+			inviteExpirationTime: calc('inviteExpirationTime', vs => Math.max(...vs)),
 			canManageCustomEmojis: calc('canManageCustomEmojis', vs => vs.some(v => v === true)),
 			canSearchNotes: calc('canSearchNotes', vs => vs.some(v => v === true)),
 			canHideAds: calc('canHideAds', vs => vs.some(v => v === true)),
 			driveCapacityMb: calc('driveCapacityMb', vs => Math.max(...vs)),
+			alwaysMarkNsfw: calc('alwaysMarkNsfw', vs => vs.some(v => v === true)),
 			pinLimit: calc('pinLimit', vs => Math.max(...vs)),
 			antennaLimit: calc('antennaLimit', vs => Math.max(...vs)),
 			wordMuteLimit: calc('wordMuteLimit', vs => Math.max(...vs)),
@@ -301,6 +323,14 @@ export class RoleService implements OnApplicationShutdown {
 	public async isAdministrator(user: { id: User['id']; isRoot: User['isRoot'] } | null): Promise<boolean> {
 		if (user == null) return false;
 		return user.isRoot || (await this.getUserRoles(user.id)).some(r => r.isAdministrator);
+	}
+
+	@bindThis
+	public async isExplorable(role: { id: Role['id']} | null): Promise<boolean> {
+		if (role == null) return false;
+		const check = await this.rolesRepository.findOneBy({ id: role.id });
+		if (check == null) return false;
+		return check.isExplorable;
 	}
 
 	@bindThis
@@ -381,7 +411,7 @@ export class RoleService implements OnApplicationShutdown {
 	@bindThis
 	public async unassign(userId: User['id'], roleId: Role['id']): Promise<void> {
 		const now = new Date();
-	
+
 		const existing = await this.roleAssignmentsRepository.findOneBy({ roleId, userId });
 		if (existing == null) {
 			throw new RoleService.NotAssignedError();
@@ -422,7 +452,13 @@ export class RoleService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public onApplicationShutdown(signal?: string | undefined) {
+	public dispose(): void {
 		this.redisForSub.off('message', this.onMessage);
+		this.roleAssignmentByUserIdCache.dispose();
+	}
+
+	@bindThis
+	public onApplicationShutdown(signal?: string | undefined): void {
+		this.dispose();
 	}
 }

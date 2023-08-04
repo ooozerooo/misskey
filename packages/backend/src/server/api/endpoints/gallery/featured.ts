@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { GalleryPostsRepository } from '@/models/index.js';
@@ -41,7 +46,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				.andWhere('post.likedCount > 0')
 				.orderBy('post.likedCount', 'DESC');
 
-			const posts = await query.take(10).getMany();
+			const posts = await query.limit(10).getMany();
 
 			return await this.galleryPostEntityService.packMany(posts, me);
 		});

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { In, IsNull } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import type { UsersRepository } from '@/models/index.js';
@@ -91,6 +96,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			let user;
 
 			const isModerator = await this.roleService.isModerator(me);
+			ps.username = ps.username?.trim();
 
 			if (ps.userIds) {
 				if (ps.userIds.length === 0) {

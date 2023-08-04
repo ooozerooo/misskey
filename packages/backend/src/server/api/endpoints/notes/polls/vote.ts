@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import type { UsersRepository, PollsRepository, PollVotesRepository } from '@/models/index.js';
 import type { RemoteUser } from '@/models/entities/User.js';
@@ -16,6 +21,8 @@ export const meta = {
 	tags: ['notes'],
 
 	requireCredential: true,
+
+	prohibitMoved: true,
 
 	kind: 'write:votes',
 

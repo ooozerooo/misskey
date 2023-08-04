@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Module } from '@nestjs/common';
 import { AccountMoveService } from './AccountMoveService.js';
 import { AccountUpdateService } from './AccountUpdateService.js';
@@ -50,6 +55,7 @@ import { WebhookService } from './WebhookService.js';
 import { ProxyAccountService } from './ProxyAccountService.js';
 import { UtilityService } from './UtilityService.js';
 import { FileInfoService } from './FileInfoService.js';
+import { SearchService } from './SearchService.js';
 import { ChartLoggerService } from './chart/ChartLoggerService.js';
 import FederationChart from './chart/charts/federation.js';
 import NotesChart from './chart/charts/notes.js';
@@ -80,6 +86,7 @@ import { GalleryLikeEntityService } from './entities/GalleryLikeEntityService.js
 import { GalleryPostEntityService } from './entities/GalleryPostEntityService.js';
 import { HashtagEntityService } from './entities/HashtagEntityService.js';
 import { InstanceEntityService } from './entities/InstanceEntityService.js';
+import { InviteCodeEntityService } from './entities/InviteCodeEntityService.js';
 import { ModerationLogEntityService } from './entities/ModerationLogEntityService.js';
 import { MutingEntityService } from './entities/MutingEntityService.js';
 import { RenoteMutingEntityService } from './entities/RenoteMutingEntityService.js';
@@ -171,6 +178,8 @@ const $VideoProcessingService: Provider = { provide: 'VideoProcessingService', u
 const $WebhookService: Provider = { provide: 'WebhookService', useExisting: WebhookService };
 const $UtilityService: Provider = { provide: 'UtilityService', useExisting: UtilityService };
 const $FileInfoService: Provider = { provide: 'FileInfoService', useExisting: FileInfoService };
+const $SearchService: Provider = { provide: 'SearchService', useExisting: SearchService };
+
 const $ChartLoggerService: Provider = { provide: 'ChartLoggerService', useExisting: ChartLoggerService };
 const $FederationChart: Provider = { provide: 'FederationChart', useExisting: FederationChart };
 const $NotesChart: Provider = { provide: 'NotesChart', useExisting: NotesChart };
@@ -202,6 +211,7 @@ const $GalleryLikeEntityService: Provider = { provide: 'GalleryLikeEntityService
 const $GalleryPostEntityService: Provider = { provide: 'GalleryPostEntityService', useExisting: GalleryPostEntityService };
 const $HashtagEntityService: Provider = { provide: 'HashtagEntityService', useExisting: HashtagEntityService };
 const $InstanceEntityService: Provider = { provide: 'InstanceEntityService', useExisting: InstanceEntityService };
+const $InviteCodeEntityService: Provider = { provide: 'InviteCodeEntityService', useExisting: InviteCodeEntityService };
 const $ModerationLogEntityService: Provider = { provide: 'ModerationLogEntityService', useExisting: ModerationLogEntityService };
 const $MutingEntityService: Provider = { provide: 'MutingEntityService', useExisting: MutingEntityService };
 const $RenoteMutingEntityService: Provider = { provide: 'RenoteMutingEntityService', useExisting: RenoteMutingEntityService };
@@ -295,6 +305,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		WebhookService,
 		UtilityService,
 		FileInfoService,
+		SearchService,
 		ChartLoggerService,
 		FederationChart,
 		NotesChart,
@@ -325,6 +336,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		GalleryPostEntityService,
 		HashtagEntityService,
 		InstanceEntityService,
+		InviteCodeEntityService,
 		ModerationLogEntityService,
 		MutingEntityService,
 		RenoteMutingEntityService,
@@ -413,6 +425,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$WebhookService,
 		$UtilityService,
 		$FileInfoService,
+		$SearchService,
 		$ChartLoggerService,
 		$FederationChart,
 		$NotesChart,
@@ -443,6 +456,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$GalleryPostEntityService,
 		$HashtagEntityService,
 		$InstanceEntityService,
+		$InviteCodeEntityService,
 		$ModerationLogEntityService,
 		$MutingEntityService,
 		$RenoteMutingEntityService,
@@ -532,6 +546,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		WebhookService,
 		UtilityService,
 		FileInfoService,
+		SearchService,
 		FederationChart,
 		NotesChart,
 		UsersChart,
@@ -561,6 +576,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		GalleryPostEntityService,
 		HashtagEntityService,
 		InstanceEntityService,
+		InviteCodeEntityService,
 		ModerationLogEntityService,
 		MutingEntityService,
 		RenoteMutingEntityService,
@@ -649,6 +665,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$WebhookService,
 		$UtilityService,
 		$FileInfoService,
+		$SearchService,
 		$FederationChart,
 		$NotesChart,
 		$UsersChart,
@@ -678,6 +695,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$GalleryPostEntityService,
 		$HashtagEntityService,
 		$InstanceEntityService,
+		$InviteCodeEntityService,
 		$ModerationLogEntityService,
 		$MutingEntityService,
 		$RenoteMutingEntityService,

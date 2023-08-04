@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and other misskey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Entity, Index, JoinColumn, Column, PrimaryColumn, ManyToOne } from 'typeorm';
 import { id } from '../id.js';
 import { noteVisibilities } from '../../types.js';
@@ -91,7 +96,7 @@ export class Note {
 	@Column('varchar', {
 		length: 64, nullable: true,
 	})
-	public reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | null;
+	public reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
 
 	@Column('smallint', {
 		default: 0,

@@ -1,7 +1,12 @@
+<!--
+SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="800">
+	<MkSpacer :contentMax="800">
 		<MkPagination v-slot="{items}" :pagination="pagination" class="ruryvtyk _gaps_m">
 			<section v-for="(announcement, i) in items" :key="announcement.id" class="announcement _panel">
 				<div class="header"><span v-if="$i && !announcement.isRead">🆕 </span>{{ announcement.title }}</div>
