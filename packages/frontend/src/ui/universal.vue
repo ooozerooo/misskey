@@ -1,20 +1,19 @@
-<!--
-SPDX-FileCopyrightText: syuilo and other misskey contributors
-SPDX-License-Identifier: AGPL-3.0-only
--->
-
 <template>
-<div :class="$style.root">
+<div :class="[$style.root, { [$style.withWallpaper]: wallpaper }]">
 	<XSidebar v-if="!isMobile" :class="$style.sidebar"/>
 
-	<MkStickyContainer ref="contents" :class="$style.contents" style="container-type: inline-size;" @contextmenu.stop="onContextmenu">
+	<MkStickyContainer v-container :class="$style.contents">
 		<template #header><XStatusBars :class="$style.statusbars"/></template>
-		<RouterView/>
-		<div :class="$style.spacer"></div>
+		<main style="min-width: 0;" :style="{ background: pageMetadata?.value?.bg }" @contextmenu.stop="onContextmenu">
+			<div :class="$style.content" style="container-type: inline-size;">
+				<RouterView/>
+			</div>
+			<div :class="$style.spacer"></div>
+		</main>
 	</MkStickyContainer>
 
-	<div v-if="isDesktop" :class="$style.widgets">
-		<XWidgets/>
+	<div v-if="isDesktop" ref="widgetsEl" :class="$style.widgets">
+		<XWidgets :margin-top="'var(--margin)'" @mounted="attachSticky"/>
 	</div>
 
 	<button v-if="!isDesktop && !isMobile" :class="$style.widgetButton" class="_button" @click="widgetsShowing = true"><i class="ti ti-apps"></i></button>
@@ -28,10 +27,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 
 	<Transition
-		:enterActiveClass="defaultStore.state.animation ? $style.transition_menuDrawerBg_enterActive : ''"
-		:leaveActiveClass="defaultStore.state.animation ? $style.transition_menuDrawerBg_leaveActive : ''"
-		:enterFromClass="defaultStore.state.animation ? $style.transition_menuDrawerBg_enterFrom : ''"
-		:leaveToClass="defaultStore.state.animation ? $style.transition_menuDrawerBg_leaveTo : ''"
+		:enter-active-class="defaultStore.state.animation ? $style.transition_menuDrawerBg_enterActive : ''"
+		:leave-active-class="defaultStore.state.animation ? $style.transition_menuDrawerBg_leaveActive : ''"
+		:enter-from-class="defaultStore.state.animation ? $style.transition_menuDrawerBg_enterFrom : ''"
+		:leave-to-class="defaultStore.state.animation ? $style.transition_menuDrawerBg_leaveTo : ''"
 	>
 		<div
 			v-if="drawerMenuShowing"
@@ -43,10 +42,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</Transition>
 
 	<Transition
-		:enterActiveClass="defaultStore.state.animation ? $style.transition_menuDrawer_enterActive : ''"
-		:leaveActiveClass="defaultStore.state.animation ? $style.transition_menuDrawer_leaveActive : ''"
-		:enterFromClass="defaultStore.state.animation ? $style.transition_menuDrawer_enterFrom : ''"
-		:leaveToClass="defaultStore.state.animation ? $style.transition_menuDrawer_leaveTo : ''"
+		:enter-active-class="defaultStore.state.animation ? $style.transition_menuDrawer_enterActive : ''"
+		:leave-active-class="defaultStore.state.animation ? $style.transition_menuDrawer_leaveActive : ''"
+		:enter-from-class="defaultStore.state.animation ? $style.transition_menuDrawer_enterFrom : ''"
+		:leave-to-class="defaultStore.state.animation ? $style.transition_menuDrawer_leaveTo : ''"
 	>
 		<div v-if="drawerMenuShowing" :class="$style.menuDrawer">
 			<XDrawerMenu/>
@@ -54,10 +53,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</Transition>
 
 	<Transition
-		:enterActiveClass="defaultStore.state.animation ? $style.transition_widgetsDrawerBg_enterActive : ''"
-		:leaveActiveClass="defaultStore.state.animation ? $style.transition_widgetsDrawerBg_leaveActive : ''"
-		:enterFromClass="defaultStore.state.animation ? $style.transition_widgetsDrawerBg_enterFrom : ''"
-		:leaveToClass="defaultStore.state.animation ? $style.transition_widgetsDrawerBg_leaveTo : ''"
+		:enter-active-class="defaultStore.state.animation ? $style.transition_widgetsDrawerBg_enterActive : ''"
+		:leave-active-class="defaultStore.state.animation ? $style.transition_widgetsDrawerBg_leaveActive : ''"
+		:enter-from-class="defaultStore.state.animation ? $style.transition_widgetsDrawerBg_enterFrom : ''"
+		:leave-to-class="defaultStore.state.animation ? $style.transition_widgetsDrawerBg_leaveTo : ''"
 	>
 		<div
 			v-if="widgetsShowing"
@@ -69,10 +68,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</Transition>
 
 	<Transition
-		:enterActiveClass="defaultStore.state.animation ? $style.transition_widgetsDrawer_enterActive : ''"
-		:leaveActiveClass="defaultStore.state.animation ? $style.transition_widgetsDrawer_leaveActive : ''"
-		:enterFromClass="defaultStore.state.animation ? $style.transition_widgetsDrawer_enterFrom : ''"
-		:leaveToClass="defaultStore.state.animation ? $style.transition_widgetsDrawer_leaveTo : ''"
+		:enter-active-class="defaultStore.state.animation ? $style.transition_widgetsDrawer_enterActive : ''"
+		:leave-active-class="defaultStore.state.animation ? $style.transition_widgetsDrawer_leaveActive : ''"
+		:enter-from-class="defaultStore.state.animation ? $style.transition_widgetsDrawer_enterFrom : ''"
+		:leave-to-class="defaultStore.state.animation ? $style.transition_widgetsDrawer_leaveTo : ''"
 	>
 		<div v-if="widgetsShowing" :class="$style.widgetsDrawer">
 			<button class="_button" :class="$style.widgetsCloseButton" @click="widgetsShowing = false"><i class="ti ti-x"></i></button>
@@ -85,10 +84,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, provide, onMounted, computed, ref, ComputedRef, watch, shallowRef, Ref } from 'vue';
+import { defineAsyncComponent, provide, onMounted, computed, ref, ComputedRef, watch, inject, Ref } from 'vue';
 import XCommon from './_common_/common.vue';
-import type MkStickyContainer from '@/components/global/MkStickyContainer.vue';
 import { instanceName } from '@/config';
+import { StickySidebar } from '@/scripts/sticky-sidebar';
 import XDrawerMenu from '@/ui/_common_/navbar-for-mobile.vue';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
@@ -100,8 +99,6 @@ import { PageMetadata, provideMetadataReceiver } from '@/scripts/page-metadata';
 import { deviceKind } from '@/scripts/device-kind';
 import { miLocalStorage } from '@/local-storage';
 import { CURRENT_STICKY_BOTTOM } from '@/const';
-import { useScrollPositionManager } from '@/nirax';
-
 const XWidgets = defineAsyncComponent(() => import('./universal.widgets.vue'));
 const XSidebar = defineAsyncComponent(() => import('@/ui/_common_/navbar.vue'));
 const XStatusBars = defineAsyncComponent(() => import('@/ui/_common_/statusbars.vue'));
@@ -117,9 +114,9 @@ window.addEventListener('resize', () => {
 });
 
 let pageMetadata = $ref<null | ComputedRef<PageMetadata>>();
+const widgetsEl = $shallowRef<HTMLElement>();
 const widgetsShowing = $ref(false);
 const navFooter = $shallowRef<HTMLElement>();
-const contents = shallowRef<InstanceType<typeof MkStickyContainer>>();
 
 provide('router', mainRouter);
 provideMetadataReceiver((info) => {
@@ -142,6 +139,8 @@ const drawerMenuShowing = ref(false);
 mainRouter.on('change', () => {
 	drawerMenuShowing.value = false;
 });
+
+document.documentElement.style.overflowY = 'scroll';
 
 if (window.innerWidth > 1024) {
 	const tempUI = miLocalStorage.getItem('ui_temp');
@@ -198,12 +197,18 @@ const onContextmenu = (ev) => {
 	}], ev);
 };
 
+const attachSticky = (el) => {
+	const sticky = new StickySidebar(widgetsEl);
+	window.addEventListener('scroll', () => {
+		sticky.calc(window.scrollY);
+	}, { passive: true });
+};
+
 function top() {
-	contents.value.rootEl.scrollTo({
-		top: 0,
-		behavior: 'smooth',
-	});
+	window.scroll({ top: 0, behavior: 'smooth' });
 }
+
+const wallpaper = miLocalStorage.getItem('wallpaper') != null;
 
 let navFooterHeight = $ref(0);
 provide<Ref<number>>(CURRENT_STICKY_BOTTOM, $$(navFooterHeight));
@@ -212,40 +217,14 @@ watch($$(navFooter), () => {
 	if (navFooter) {
 		navFooterHeight = navFooter.offsetHeight;
 		document.body.style.setProperty('--stickyBottom', `${navFooterHeight}px`);
-		document.body.style.setProperty('--minBottomSpacing', 'var(--minBottomSpacingMobile)');
 	} else {
 		navFooterHeight = 0;
 		document.body.style.setProperty('--stickyBottom', '0px');
-		document.body.style.setProperty('--minBottomSpacing', '0px');
 	}
 }, {
 	immediate: true,
 });
-
-useScrollPositionManager(() => contents.value.rootEl, mainRouter);
 </script>
-
-<style>
-html,
-body {
-	width: 100%;
-	height: 100%;
-	overflow: clip;
-	position: fixed;
-	top: 0;
-	left: 0;
-	overscroll-behavior: none;
-}
-
-#misskey_app {
-	width: 100%;
-	height: 100%;
-	overflow: clip;
-	position: absolute;
-	top: 0;
-	left: 0;
-}
-</style>
 
 <style lang="scss" module>
 $ui-font-size: 1em; // TODO: どこかに集約したい
@@ -296,11 +275,20 @@ $widgets-hide-threshold: 1090px;
 }
 
 .root {
-	height: 100dvh;
-	overflow: clip;
-	contain: strict;
+	min-height: 100dvh;
 	box-sizing: border-box;
 	display: flex;
+
+	@media (min-width: 1201px) {
+		height: 100dvh !important; 
+                overflow: clip;
+                contain: strict;
+	}
+}
+
+.withWallpaper {
+	background: var(--wallpaperOverlay);
+	//backdrop-filter: var(--blur, blur(4px));
 }
 
 .sidebar {
@@ -311,10 +299,13 @@ $widgets-hide-threshold: 1090px;
 	flex: 1;
 	height: 100%;
 	min-width: 0;
-	overflow: auto;
-	overflow-y: scroll;
-	overscroll-behavior: contain;
-	background: var(--bg);
+        background: var(--bg);
+
+	@media (min-width: 1201px) {
+		overflow: auto;
+		overflow-y: scroll;
+		overscroll-behavior: contain;
+	}
 }
 
 .widgets {
@@ -354,7 +345,7 @@ $widgets-hide-threshold: 1090px;
 	top: 0;
 	right: 0;
 	z-index: 1001;
-	width: 310px;
+        width: 310px;
 	height: 100dvh;
 	padding: var(--margin) var(--margin) calc(var(--margin) + env(safe-area-inset-bottom, 0px)) !important;
 	box-sizing: border-box;

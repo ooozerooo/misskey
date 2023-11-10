@@ -214,6 +214,7 @@ function exploreOtherServers() {
 
 .tl {
 	overflow: clip;
+	display: none;
 }
 
 .tlHeader {

@@ -909,6 +909,8 @@ defineExpose({
 	&.modal {
 		width: 100%;
 		max-width: 520px;
+		max-height: 90vh;
+		overflow: scroll;
 	}
 }
 
@@ -1031,8 +1033,6 @@ defineExpose({
 
 .preview {
 	padding: 16px 20px 0 20px;
-	max-height: 150px;
-	overflow: auto;
 }
 
 .targetNote {

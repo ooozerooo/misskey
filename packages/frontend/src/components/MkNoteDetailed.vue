@@ -47,11 +47,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkA v-user-preview="appearNote.user.id" :class="$style.noteHeaderName" :to="userPage(appearNote.user)">
 						<MkUserName :nowrap="false" :user="appearNote.user"/>
 					</MkA>
-                                       <MkA class="created-at" :to="notePage(note)">
-		                                <MkTime :time="note.createdAt"/>
-                                        </MkA>
                                         <span v-if="appearNote.user.isBot" :class="$style.isBot">bot</span>
                                         <div :class="$style.noteHeaderInfo">
+						<MkA class="created-at" :to="notePage(note)">
+							<MkTime :time="note.createdAt"/>
+						</MkA>
 						<span class="visibility" style="margin-left: 0.5em;" :title="i18n.ts._visibility[appearNote.visibility]">
 							<i v-if="appearNote.visibility === 'public'" class="ti ti-world"></i>
 							<i v-if="appearNote.visibility === 'home'" class="ti ti-home"></i>
@@ -390,14 +390,16 @@ function onContextmenu(ev: MouseEvent): void {
 		ev.preventDefault();
 		react();
 	} else {
-		os.contextMenu(getNoteMenu({ note: note, translating, translation, menuButton, isDeleted }), ev).then(focus);
+		const { menu, cleanup } = getNoteMenu({ note: note, translating, translation, menuButton, isDeleted });
+		os.contextMenu(menu, ev).then(focus).finally(cleanup);
 	}
 }
 
 function menu(viaKeyboard = false): void {
-	os.popupMenu(getNoteMenu({ note: note, translating, translation, menuButton, isDeleted }), menuButton.value, {
+	const { menu, cleanup } = getNoteMenu({ note: note, translating, translation, menuButton, isDeleted });
+	os.popupMenu(menu, menuButton.value, {
 		viaKeyboard,
-	}).then(focus);
+	}).then(focus).finally(cleanup);
 }
 
 async function clip() {

@@ -143,12 +143,10 @@ useTooltip(buttonEl, async (showing) => {
 		}
 	}
 
-	&.reacted {
+	&.reacted, &.reacted:hover {
 		background: var(--X2);
-
-		&:hover {
-			background: rgba(0, 0, 0, 0.2);
-		}
+		color: var(--accent);
+		 border: 1px solid var(--accent);
 
 		> .count {
 			color: var(--fgTransparentWeak);

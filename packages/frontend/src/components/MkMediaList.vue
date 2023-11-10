@@ -136,7 +136,7 @@ async function calcAspectRatio() {
 			if (width === 0 || !maxHeight) return;
 			const imgResizeRatio = width / img.properties.width;
 			const imgDrawHeight = img.properties.height * imgResizeRatio;
-			gallery.value.style.height = `${Math.max(64, Math.min(imgDrawHeight, maxHeight))}px`;
+			gallery.value.style.height = `${Math.min(380, Math.max(64, Math.min(imgDrawHeight, maxHeight)))}px`;
 			gallery.value.style.minHeight = 'initial';
 			gallery.value.style.maxHeight = 'initial';
 			break;

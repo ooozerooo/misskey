@@ -168,10 +168,10 @@ export default defineComponent({
 	> *:empty {
 		display: none;
 	}
-
-	> *:not(:last-child) {
-		margin-bottom: 0;
 	}
+
+	&:not(.date-separated-list-nogap) > *:not(:last-child) {
+		margin-bottom: 0;
 	}
 }
 
