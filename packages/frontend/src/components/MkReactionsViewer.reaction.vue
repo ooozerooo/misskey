@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	ref="buttonEl"
 	v-ripple="canToggle"
 	class="_button"
-	:class="[$style.root, { [$style.reacted]: note.myReaction == reaction, [$style.canToggle]: canToggle, [$style.large]: defaultStore.state.largeNoteReactions }]"
+	:class="[$style.root, { [$style.reacted]: note.myReaction == reaction, [$style.canToggle]: canToggle, [$style.small]: defaultStore.state.reactionsDisplaySize === 'small', [$style.large]: defaultStore.state.reactionsDisplaySize === 'large' }]"
 	@click="toggleReaction()"
 >
 	<MkReactionIcon :class="$style.icon" :reaction="reaction" :emojiUrl="note.reactionEmojis[reaction.substring(1, reaction.length - 1)]"/>
@@ -17,23 +17,29 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, shallowRef, watch } from 'vue';
-import * as misskey from 'misskey-js';
+import { computed, inject, onMounted, shallowRef, watch } from 'vue';
+import * as Misskey from 'misskey-js';
 import XDetails from '@/components/MkReactionsViewer.details.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
-import * as os from '@/os';
-import { useTooltip } from '@/scripts/use-tooltip';
-import { $i } from '@/account';
+import * as os from '@/os.js';
+import { useTooltip } from '@/scripts/use-tooltip.js';
+import { $i } from '@/account.js';
 import MkReactionEffect from '@/components/MkReactionEffect.vue';
-import { claimAchievement } from '@/scripts/achievements';
-import { defaultStore } from '@/store';
-import { i18n } from '@/i18n';
+import { claimAchievement } from '@/scripts/achievements.js';
+import { defaultStore } from '@/store.js';
+import { i18n } from '@/i18n.js';
 
 const props = defineProps<{
 	reaction: string;
 	count: number;
 	isInitial: boolean;
-	note: misskey.entities.Note;
+	note: Misskey.entities.Note;
+}>();
+
+const mock = inject<boolean>('mock', false);
+
+const emit = defineEmits<{
+	(ev: 'reactionToggled', emoji: string, newCount: number): void;
 }>();
 
 const buttonEl = shallowRef<HTMLElement>();
@@ -53,6 +59,11 @@ async function toggleReaction() {
 		});
 		if (confirm.canceled) return;
 
+		if (mock) {
+			emit('reactionToggled', props.reaction, (props.count - 1));
+			return;
+		}
+
 		os.api('notes/reactions/delete', {
 			noteId: props.note.id,
 		}).then(() => {
@@ -64,6 +75,11 @@ async function toggleReaction() {
 			}
 		});
 	} else {
+		if (mock) {
+			emit('reactionToggled', props.reaction, (props.count + 1));
+			return;
+		}
+
 		os.api('notes/reactions/create', {
 			noteId: props.note.id,
 			reaction: props.reaction,
@@ -92,24 +108,26 @@ onMounted(() => {
 	if (!props.isInitial) anime();
 });
 
-useTooltip(buttonEl, async (showing) => {
-	const reactions = await os.apiGet('notes/reactions', {
-		noteId: props.note.id,
-		type: props.reaction,
-		limit: 11,
-		_cacheKey_: props.count,
-	});
+if (!mock) {
+	useTooltip(buttonEl, async (showing) => {
+		const reactions = await os.apiGet('notes/reactions', {
+			noteId: props.note.id,
+			type: props.reaction,
+			limit: 10,
+			_cacheKey_: props.count,
+		});
 
-	const users = reactions.map(x => x.user);
+		const users = reactions.map(x => x.user);
 
-	os.popup(XDetails, {
-		showing,
-		reaction: props.reaction,
-		users,
-		count: props.count,
-		targetElement: buttonEl.value,
-	}, {}, 'closed');
-}, 100);
+		os.popup(XDetails, {
+			showing,
+			reaction: props.reaction,
+			users,
+			count: props.count,
+			targetElement: buttonEl.value,
+		}, {}, 'closed');
+	}, 100);
+}
 </script>
 
 <style lang="scss" module>
@@ -118,7 +136,7 @@ useTooltip(buttonEl, async (showing) => {
 	height: 32px;
 	margin: 2px;
 	padding: 0 6px;
-	border-radius: 4px;
+	border-radius: 6px;
 
 	&.canToggle {
 		background: var(--X2);
@@ -132,21 +150,32 @@ useTooltip(buttonEl, async (showing) => {
 		cursor: default;
 	}
 
-	&.large {
-		height: 42px;
-		font-size: 1.5em;
-		border-radius: 6px;
+	&.small {
+		height: 32px;
+		font-size: 1em;
+		border-radius: 4px;
 
 		> .count {
-			font-size: 0.7em;
-			line-height: 42px;
+			font-size: 0.9em;
+			line-height: 32px;
+		}
+	}
+
+	&.large {
+		height: 52px;
+		font-size: 2em;
+		border-radius: 8px;
+
+		> .count {
+			font-size: 0.6em;
+			line-height: 52px;
 		}
 	}
 
 	&.reacted, &.reacted:hover {
 		background: var(--X2);
 		color: var(--accent);
-		 border: 1px solid var(--accent);
+		box-shadow: 0 0 0px 1px var(--accent) inset;
 
 		> .count {
 			color: var(--fgTransparentWeak);
@@ -156,6 +185,10 @@ useTooltip(buttonEl, async (showing) => {
 			filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 		}
 	}
+}
+
+.icon {
+	max-width: 150px;
 }
 
 .count {
